@@ -4,10 +4,10 @@ from setuptools import setup
 
 setup(
     name='BayesABTest',
-    version='1.0.0',
+    version='1.0.2',
     author="Baker Moran",
     author_email="bamoran99@gmail.com",
-    description="A class that creates a Bayesian AB test report based on input data",
+    description="A package for running AB tests in a Bayesian framework.",
     url="https://github.com/bakermoran/BayesABTest",
     packages=['BayesABTest'],
     include_package_data=True,

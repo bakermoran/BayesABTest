@@ -32,29 +32,29 @@ Conversion data uses the beta distribution as the conjugate prior, and continuou
 
 ### Methods
 
-* `create_model()`
+* `fit()`
   * *requires* - class was instantiated with valid inputs
   * *modifies* - `ecdf`, `control_sample`, `variant_sample`, `lift`
   * *effects* - creates and runs the monte carlo simulation, sets member variables to reflect model outputs
-* `create_report()`
-  * *requires* - `create_model()` has been run
+* `plot()`
+  * *requires* - `fit()` has been run
   * *modifies* - none
   * *effects* - creates a 3 chart report of the AB test and opens it in a python viewer
 
 ### Variables
 
 * all variables in `Instantiation variables`
-* `ecdf` - a dictionary with keys `x` and `y`, and the value is a list containing the x and y coordinates for the empirical CDF (only meaningful after `create_model()` is run)
-* `control_sample` - a list containing the sampled values from the control posterior distribution (only meaningful after `create_model()` is run)
-* `variant_sample` - a list containing the sampled values from the variant posterior distribution (only meaningful after `create_model()` is run)
-* `lift` - a list containing the lift of the variant over the control for each sampled value (only meaningful after `create_model()` is run)
+* `ecdf` - a dictionary with keys `x` and `y`, and the value is a list containing the x and y coordinates for the empirical CDF (only meaningful after `fit()` is run)
+* `control_sample` - a list containing the sampled values from the control posterior distribution (only meaningful after `fit()` is run)
+* `variant_sample` - a list containing the sampled values from the variant posterior distribution (only meaningful after `fit()` is run)
+* `lift` - a list containing the lift of the variant over the control for each sampled value (only meaningful after `fit()` is run)
 
 ## Usage guide
 
 First install package. Navigate to the directory in terminal and pip install it.
 
 ```bash
-cd python_bayes
+cd BayesABTest
 pip3 install -e .
 ```
 
@@ -62,22 +62,22 @@ Second, import in your analysis file.
 
 ```python
 import pandas as pd
-from BayesABTest import BayesABTest as ab
+from BayesABTest import ab_test_model
 
 # read in data
 df = pd.read_csv('some_file.csv')
 
 # initialize class with the data and some optional variables
-ab_test_class = ab.BayesABTest(df, metric='bind', prior_info='informed', prior_func='beta', debug=True)
+first_test = ab_test_model(df, metric='bind', prior_info='informed', prior_func='beta', debug=True)
 
 # run public methods
-ab_test_class.create_model()
-ab_test_class.create_report()
+first_test.fit()
+first_test.plot()
 ```
 
 ## Example output
 
-### Chart Summary (Top Left -> Clockwise)
+### Chart Type Descriptions (Top Left -> Clockwise)
 
 * **Posterior Distributions** - Shows both buckets posterior distributions, an estimate of the true conversion rate or continuous value, based on the prior and the observed data (using kernel density estimation plots)
 * **Lift PDF** - Shows the probability density distribution of lift for the variant over the control, an estimate of the chance of improvement of the variant over the control (using kernel density estimation plot). Calculated by: the results from the sampled values for the variant percent change from the control. The proportion greater than 0 is highlighted.
@@ -108,6 +108,7 @@ ab_test_class.create_report()
 * `0.1.0` - *12/02/2019*
 * `1.0.0` - *12/27/2019*
 * `1.0.1` - *01/02/2020*
+* `1.0.2` - *02/11/2020*
 
 ### Acknowledgements
 
