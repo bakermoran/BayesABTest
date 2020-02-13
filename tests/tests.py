@@ -4,8 +4,6 @@ import pandas as pd
 from BayesABTest import ab_test_model as ab
 import data_helpers as dh
 
-## TEST FUNCTIONS
-# this file runs some sample tests to check if output is working
 def one_variant_conversion():
   """Create data and run a one variant report for a conversion metric."""
   raw_data_auto_bind = dh.create_conversion_data([.27,.3],['off','on'],
@@ -58,10 +56,9 @@ def two_variants_conversion():
                             prior_info='uninformed', prior_func='beta',
                             debug=True, control_bucket_name='control',
                             variant_bucket_names=['variant_1','variant_2'],
-                            compare_variants=True, lift_plot_flag=True,
-                            samples=1000)
+                            compare_variants=True, samples=1000)
   auto_bind.fit()
-  auto_bind.plot()
+  auto_bind.plot(lift_plot_flag=True)
 
 def conversion_negative_variants():
   """Create data and run a two variant report for a conversion metric
@@ -73,10 +70,9 @@ def conversion_negative_variants():
                             prior_info='uninformed', prior_func='beta',
                             debug=True, control_bucket_name='control',
                             variant_bucket_names=['variant_1','variant_2'],
-                            compare_variants=True, lift_plot_flag=True,
-                            samples=1000)
+                            compare_variants=True, samples=1000)
   auto_bind.fit()
-  auto_bind.plot()
+  auto_bind.plot(lift_plot_flag=True)
 
 def two_variants_continuous():
   """Create data and run a two variant report for a continuous metric."""
@@ -101,7 +97,7 @@ def three_variants_continuous():
                             prior_info='informed', prior_func='log-normal',
                             debug=True, control_bucket_name='control',
                             variant_bucket_names=['variant_1','variant_2','variant_3'],
-                            compare_variants=False,
+                            compare_variants=True,
                             samples=1000)
   premium.fit()
   premium.plot()
@@ -115,10 +111,9 @@ def four_variants_continuous():
                             prior_info='informed', prior_func='log-normal',
                             debug=True, control_bucket_name='control',
                             variant_bucket_names=['variant_1','variant_2','variant_3','variant_4'],
-                            compare_variants=False, lift_plot_flag=True,
-                            samples=1000)
+                            compare_variants=False, samples=1000)
   premium.fit()
-  premium.plot()
+  premium.plot(lift_plot_flag=True)
 
 def two_variants_continuous_normal():
   """Create data and run a four variant report for a normal
@@ -130,10 +125,9 @@ def two_variants_continuous_normal():
                             prior_info='informed', prior_func='normal',
                             debug=True, control_bucket_name='control',
                             variant_bucket_names=['variant_1','variant_2'],
-                            compare_variants=True, lift_plot_flag=True,
-                            samples=1000)
+                            compare_variants=True, samples=1000)
   premium.fit()
-  premium.plot()
+  premium.plot(lift_plot_flag=True)
 
 def two_variants_poisson():
   """Create data and run a four variant report for a normal
@@ -146,7 +140,67 @@ def two_variants_poisson():
                             prior_info='informed', prior_func='poisson',
                             debug=True, control_bucket_name='control',
                             variant_bucket_names=['variant_1','variant_2'],
-                            compare_variants=True, lift_plot_flag=True,
-                            samples=3000)
+                            compare_variants=True, samples=3000)
   visits.fit()
-  visits.plot()
+  visits.plot( lift_plot_flag=True)
+
+def single_plot_posteriors_unit_test():
+  """Test plot_posteriors."""
+  rawdata = dh.create_poisson_data([15,17,20],
+                                   ['control','variant_1','variant_2'],
+                                   metric_name='visits', sample_length=3000)
+
+  visits = ab(rawdata, metric='visits',
+                            prior_info='informed', prior_func='poisson',
+                            debug=True, control_bucket_name='control',
+                            variant_bucket_names=['variant_1','variant_2'],
+                            compare_variants=True, samples=3000)
+  visits.fit()
+  visits.plot_posteriors()
+  visits.plot_posteriors(variants=['control','variant_1','variant_2'])
+  visits.plot_posteriors(variants=['variant_1','variant_2'])
+  visits.plot_posteriors(variants=['control','variant_2'])
+  visits.plot_posteriors(variants=['control','variant_1'])
+  visits.plot_posteriors(variants=['variant_1'])
+  visits.plot_posteriors(variants=['control'])
+  visits.plot_posteriors(variants=['variant_2'])
+
+def single_plot_lift_unit_test():
+  """Test plot_posteriors."""
+  rawdata = dh.create_poisson_data([15,17,20],
+                                   ['control','variant_1','variant_2'],
+                                   metric_name='visits', sample_length=3000)
+
+  visits = ab(rawdata, metric='visits',
+                            prior_info='informed', prior_func='poisson',
+                            debug=True, control_bucket_name='control',
+                            variant_bucket_names=['variant_1','variant_2'],
+                            compare_variants=True, samples=3000)
+  visits.fit()
+  visits.plot_positive_lift('control','variant_1')
+  visits.plot_positive_lift('variant_1','variant_2')
+  visits.plot_positive_lift('control','variant_2')
+
+  visits.plot_positive_lift('variant_1','control')
+  visits.plot_positive_lift('variant_2','variant_1')
+  visits.plot_positive_lift('variant_2','control')
+
+def single_plot_ecdf_unit_test():
+  """Test plot_posteriors."""
+  rawdata = dh.create_poisson_data([15,17,20],
+                                   ['control','variant_1','variant_2'],
+                                   metric_name='visits', sample_length=3000)
+
+  visits = ab(rawdata, metric='visits',
+                            prior_info='informed', prior_func='poisson',
+                            debug=True, control_bucket_name='control',
+                            variant_bucket_names=['variant_1','variant_2'],
+                            compare_variants=True, samples=3000)
+  visits.fit()
+  visits.plot_ecdf('control','variant_1')
+  visits.plot_ecdf('variant_1','variant_2')
+  visits.plot_ecdf('control','variant_2')
+
+  visits.plot_ecdf('variant_1','control')
+  visits.plot_ecdf('variant_2','variant_1')
+  visits.plot_ecdf('variant_2','control')
