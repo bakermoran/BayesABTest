@@ -8,10 +8,13 @@ class _ab_test_utils:
         labels.append('{:.0%}'.format(locs[i]))
       return labels
 
-  def _stringify_variants(self):
-    strings = [self.control_bucket_name] + self.variant_bucket_names
+  def _stringify_variants(self, variants=[]):
+    if variants == []:
+      strings = [self.control_bucket_name] + self.variant_bucket_names
+    else: strings = variants
     last_word = []
-    if len(strings) == 2:
+    if len(strings) == 1: title = strings[0]
+    elif len(strings) == 2:
       title = strings[0] + ' and ' + strings[1]
     else:
       last_word = strings[-1]

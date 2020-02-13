@@ -8,20 +8,25 @@ from ._ab_test_model_utils import _ab_test_utils
 #pylint: disable=no-member
 
 class _ab_test_plotting(_ab_test_utils):
-  def _plot_posteriors(self):
+  def _plot_posteriors(self, variants=[]):
     """Plot kernel density estimations of the posterior samples."""
     colors = ['blue', 'red', 'green', 'yellow', 'purple', 'cyan']
     colors += colors
-    sns.kdeplot(self.control_sample, shade=True, color=colors[0])
+    legend_labels = []
+    if variants == [] or self.control_bucket_name in variants:
+      sns.kdeplot(self.control_sample, shade=True, color=colors[0])
+      legend_labels.append(self.control_bucket_name)
     for i in range(0, len(self.variant_bucket_names)):
-      sns.kdeplot(self.variant_samples[i], shade=True, color=colors[i+1])
-    plt.legend(labels=self._buckets, loc='upper right')
+      if variants == [] or self.variant_bucket_names[i] in variants:
+        sns.kdeplot(self.variant_samples[i], shade=True, color=colors[i+1])
+        legend_labels.append(self.variant_bucket_names[i])
+    plt.legend(labels=legend_labels, loc='upper right')
     if self.prior_func == 'beta': plt.xlabel('Conversion Rate')
     elif self.prior_func == 'log-normal' or self.prior_func == 'normal':
       plt.xlabel(self.metric)
     sns.despine(left=True)
     plt.yticks([],[])
-    title = 'Distributions for {0} for {1}'.format(self._stringify_variants(),
+    title = 'Distribution(s) for {0} for {1}'.format(self._stringify_variants(variants),
                                                     self.metric)
     title = self._format_title(title)
     plt.title(title)
@@ -35,7 +40,8 @@ class _ab_test_plotting(_ab_test_utils):
     """Plot the lift as a kernel density estimation.
     sample1 and sample2 are for the row title. They are not used for
     one variant, and for multiple variants, sample 1 is the denominator,
-    sample2 is the numerator. -1 for sample1 means it is the control"""
+    sample2 is the numerator. -1 for sample1 means it is the control.
+    """
     ax = sns.kdeplot(lift,shade=True)
     line = ax.get_lines()[-1]
     x, y = line.get_data()
@@ -146,3 +152,75 @@ class _ab_test_plotting(_ab_test_utils):
           print('percent positive lift for {0} over {1} = {2:.2%}'.format(self.variant_bucket_names[combination[1]],
                                                                           self.variant_bucket_names[combination[0]],
                                                                           percent_positive_lift))
+
+
+  def plot_posteriors(self, variants=[]):
+    """Plot the PDFs of the posterior distributions. If variants
+    is not set, all are plotted, otherwise, the variants in the list are plotted.
+    variants must only have items in control_bucket_name, or variant_bucket_names.
+    """
+    for var in variants:
+      if var not in self.variant_bucket_names and var != self.control_bucket_name:
+        raise Exception('variants must only have items in control_bucket_name, or variant_bucket_names')
+    self._plot_posteriors(variants)
+    plt.show()
+
+  def plot_positive_lift(self, variant_one, variant_two):
+    """Plot the positive lift pdt between variant_one and variant_two.
+       variant_one and variant_two should not be the same, and should be either
+       one of control_bucket_name or in variant_bucket_names."""
+    if variant_one == variant_two:
+      raise Exception('variant_one and variant_two cannot be the same')
+    if variant_one != self.control_bucket_name and variant_one not in self.variant_bucket_names:
+      raise Exception('variant_one must be one of {0}, or {1}'.format(self.control_bucket_name, self.variant_bucket_names))
+    if variant_one != self.control_bucket_name and variant_one not in self.variant_bucket_names:
+      raise Exception('variant_one must be one of {0}, or {1}'.format(self.control_bucket_name, self.variant_bucket_names))
+
+    if variant_one == self.control_bucket_name or variant_two == self.control_bucket_name:
+      sample1 = -1
+      if variant_two != self.control_bucket_name:
+        sample2 = self.variant_bucket_names.index(variant_two)
+      else:
+        sample2 = self.variant_bucket_names.index(variant_one)
+    else:
+      if not self.compare_variants:
+        # to do: this is dumb, shouldnt be a requirement
+        raise Exception('compare_variants must be set to true in order to compare {0} and {1}'.format(variant_one, variant_two))
+      sample1 = min(self.variant_bucket_names.index(variant_one),
+                    self.variant_bucket_names.index(variant_two))
+      sample2 = max(self.variant_bucket_names.index(variant_one),
+                    self.variant_bucket_names.index(variant_two))
+
+    if sample1 == -1:
+      self._plot_positive_lift(self.lift[sample2], sample1=-1, sample2=sample2)
+    else:
+      self._plot_positive_lift(self.lift[sample2+len(self.variant_bucket_names)-1], sample1=sample1, sample2=sample2)
+    plt.show()
+
+
+  def plot_ecdf(self, variant_one, variant_two):
+    """Plot the empirical cdf for the lift between variant_one and variant_two.
+       variant_one and variant_two should not be the same, and should be either
+       one of control_bucket_name or in variant_bucket_names."""
+    if variant_one == variant_two:
+      raise Exception('variant_one and variant_two cannot be the same')
+    if variant_one != self.control_bucket_name and variant_one not in self.variant_bucket_names:
+      raise Exception('variant_one must be one of {0}, or {1}'.format(self.control_bucket_name, self.variant_bucket_names))
+    if variant_one != self.control_bucket_name and variant_one not in self.variant_bucket_names:
+      raise Exception('variant_one must be one of {0}, or {1}'.format(self.control_bucket_name, self.variant_bucket_names))
+
+    if variant_one == self.control_bucket_name:
+      self._plot_ecdf(variant_two)
+      plt.ylabel('Cumulative Lift: {0} vs {1}'.format(variant_two, variant_one))
+    elif variant_two == self.control_bucket_name:
+      self._plot_ecdf(variant_one)
+      plt.ylabel('Cumulative Lift: {0} vs {1}'.format(variant_one, variant_two))
+    elif self.variant_bucket_names.index(variant_one) > self.variant_bucket_names.index(variant_two):
+      name = 'bucket_comparison' + str(self.variant_bucket_names.index(variant_one)) + '_' + str(self.variant_bucket_names.index(variant_two))
+      self._plot_ecdf(name)
+      plt.ylabel('Cumulative Lift: {0} vs {1}'.format(variant_one, variant_two))
+    else:
+      name = 'bucket_comparison' + str(self.variant_bucket_names.index(variant_two)) + '_' + str(self.variant_bucket_names.index(variant_one))
+      self._plot_ecdf(name)
+      plt.ylabel('Cumulative Lift: {0} vs {1}'.format(variant_two, variant_one))
+    plt.show()
