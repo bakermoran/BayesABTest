@@ -30,3 +30,5 @@ from .ab_test_model import ab_test_model
 # to do: debug should actually output diagnostic info of the model
 # to do: add public interface to the single graphing functions, with args for variant names
 # to do: lift_plot_flag and compare_variants should be an input to the create report function
+
+# to do: refactor and get rid of tech debt :|

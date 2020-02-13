@@ -45,7 +45,6 @@ class ab_test_model(_ab_test_plotting, _ab_test_distributions, _ab_test_loss_fun
        informed -- uses the control as the prior belief, will add support to scale down that belief to a weaker belief
      confidence_level -- value for the confidence interval on the CDF chart (defaults to 0.05)
      compare_variants -- boolean for comparing the variants to each other. Control to each variant is always done (unless there are too many variants to plot). If there are few enough variants, the comparisons for variants will be plotted. (defaults to False)
-     lift_plot_flag -- boolean for plotting lift PDF and CDF (defaults to True)
      debug -- boolean to print out extra output for debugging purposes (defaults to False)
      prior_scale_factor -- factor to scale an informed prior by (see empirical [empirical bayes](https://en.wikipedia.org/wiki/Empirical_Bayes_method)) (defaults to 4)
 
@@ -59,7 +58,7 @@ class ab_test_model(_ab_test_plotting, _ab_test_distributions, _ab_test_loss_fun
                prior_info='informed', control_bucket_name='off',
                variant_bucket_names=['on'], bucket_col_name='bucket',
                confidence_level=.05, compare_variants=False, debug=False,
-               lift_plot_flag=True, prior_scale_factor=4):
+               prior_scale_factor=4):
     """
     Initialize an instance of BayesABTest with input variables.
     See class doc string for variable explanation.
@@ -69,25 +68,16 @@ class ab_test_model(_ab_test_plotting, _ab_test_distributions, _ab_test_loss_fun
                               prior_info, control_bucket_name,
                               variant_bucket_names, bucket_col_name,
                               confidence_level, compare_variants,
-                              debug, lift_plot_flag, prior_scale_factor)
+                              debug, prior_scale_factor)
 
     # PUBLIC VARIABLES
     self.debug = debug
-    if lift_plot_flag and len(variant_bucket_names) > 3 and compare_variants:
-      self.lift_plot_flag = False
-      print('WARNING: lift_plot_flag reset to False due to the large number of combinations of variant comparisons.')
-      print('Re-run with less variants selected for comparison, or turn off compare_variants')
-    self.compare_variants = compare_variants
-    if len(variant_bucket_names) > 5:
-      self.lift_plot_flag = False
-      print('WARNING: lift PDF and CDF graphing is turned off for more than 5 varaints. Only the posterior PDFs will be plotted.')
-      print('Re-run with less variants selected for lift comparisons, or run with debug=True to see relative lifts in command line.')
-    else: self.lift_plot_flag = lift_plot_flag
     self.prior_info = prior_info
     self.prior_func = prior_func
     self.raw_data = raw_data
     self.metric = metric
     self.samples = samples
+    self.compare_variants = compare_variants
     if samples * (1 + len(variant_bucket_names)) > 50000:
       print('WARNING: This is a large amount of sampling. Run time may be long.')
       print('Running', samples, 'on', 1 + len(variant_bucket_names),
@@ -112,7 +102,7 @@ class ab_test_model(_ab_test_plotting, _ab_test_distributions, _ab_test_loss_fun
                            prior_info, control_bucket_name,
                            variant_bucket_names, bucket_col_name,
                            confidence_level, compare_variants,
-                           debug, lift_plot_flag, prior_scale_factor):
+                           debug, prior_scale_factor):
     """Check the input variables for errors. This class only supports
     the following inputs.
     """
@@ -154,10 +144,10 @@ class ab_test_model(_ab_test_plotting, _ab_test_distributions, _ab_test_loss_fun
       raise Exception('Input dataframe must contain column:', bucket_col_name)
     if confidence_level <= 0 or confidence_level >= 1:
       raise Exception('Confidence level must be in the interval (0,1)')
-    if debug not in [True, False] or \
-       compare_variants not in [True, False] or \
-       lift_plot_flag not in [True, False]:
+    if debug not in [True, False]:
       raise Exception('debug must be either True or False')
+    if compare_variants not in [True, False]:
+      raise Exception('compare_variants must be either True or False')
 
 
   def fit(self):
@@ -177,17 +167,28 @@ class ab_test_model(_ab_test_plotting, _ab_test_distributions, _ab_test_loss_fun
       print('Posterior sampling distribution summary statistics' +
             '\n {}'.format(summary[['mean', 'sd']].round(4)))
 
-    if (self.lift_plot_flag) or (not self.lift_plot_flag and self.debug):
-      self._calc_lift()
-      self._calc_ecdf()
+    self._calc_lift()
+    self._calc_ecdf()
 
 
-  def plot(self):
+  def plot(self, lift_plot_flag=True):
     """Utilize the private graphing functions to
     create a report of the test in one image.
+
+    Params:
+      lift_plot_flag -- boolean for plotting lift PDF and CDF (defaults to True)
     """
     if self.control_sample == []: raise Exception('fit() must be' +
                                                   'run before plot')
+
+    if lift_plot_flag and len(self.variant_bucket_names) > 3 and self.compare_variants:
+      lift_plot_flag = False
+      print('WARNING: lift_plot_flag reset to False due to the large number of combinations of variant comparisons.')
+      print('Re-run with less variants selected for comparison, or turn off compare_variants')
+    if len(self.variant_bucket_names) > 5:
+      lift_plot_flag = False
+      print('WARNING: lift PDF and CDF graphing is turned off for more than 5 varaints. Only the posterior PDFs will be plotted.')
+      print('Re-run with less variants selected for lift comparisons, or run with debug=True to see relative lifts in command line.')
 
     fig = plt.figure(figsize=[12.8, 9.6])
     fig.suptitle('Bayesian AB Test Report for {}'.format(self.metric),
@@ -196,7 +197,7 @@ class ab_test_model(_ab_test_plotting, _ab_test_distributions, _ab_test_loss_fun
     fig.subplots_adjust(hspace=1)
 
     # PDFS ONLY
-    if not self.lift_plot_flag:
+    if not lift_plot_flag:
       self._plot_posteriors()
       plt.show()
 
@@ -231,7 +232,7 @@ class ab_test_model(_ab_test_plotting, _ab_test_distributions, _ab_test_loss_fun
       if self.compare_variants:
         for num in range(0, len(combs)):
           plt.subplot(nrows,2,loc)
-          self._plot_positive_lift(self.lift[num+2], sample1=combs[num][1],
+          self._plot_positive_lift(self.lift[num+len(self.variant_bucket_names)], sample1=combs[num][1],
                                     sample2=str(combs[num][0]))
           plt.subplot(nrows,2,loc+1)
           name = 'bucket_comparison' + \
@@ -239,21 +240,3 @@ class ab_test_model(_ab_test_plotting, _ab_test_distributions, _ab_test_loss_fun
           self._plot_ecdf(name)
           loc += 2
       plt.show()
-
-
-  def plot_posteriors(self):
-    """Public interface to plot just the posteriors."""
-    raise NotImplementedError
-    # to do: add ability to call with variable names
-    # self.plot_posteriors()
-    # plt.show()
-
-
-  def plot_positive_lift(self, ):
-    raise NotImplementedError
-    # self._plot_positive_lift()
-
-
-  def plot_ecdf(self):
-    raise NotImplementedError
-    # self.plot_ecdf()

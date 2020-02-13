@@ -24,7 +24,6 @@ Conversion data uses the beta distribution as the conjugate prior, and continuou
   * `informed` - uses the control as the prior belief, will add support to scale down that belief to a weaker belief
 * `confidence_level` - value for the confidence interval on the CDF chart (defaults to `0.05`)
 * `compare_variants` - boolean for comparing the variants to each other. Control to each variant is always done (unless there are too many variants to plot). If there are few enough variants, the comparisons for variants will be plotted. (defaults to `False`)
-* `lift_plot_flag` - boolean for plotting lift PDF and CDF (defaults to `True`)
 * `debug` - boolean to print out extra output for debugging purposes (defaults to `False`)
 * `prior_scale_factor` - factor to scale an informed prior by (see empirical [empirical bayes](https://en.wikipedia.org/wiki/Empirical_Bayes_method)) (defaults to `4`)
 
@@ -36,7 +35,8 @@ Conversion data uses the beta distribution as the conjugate prior, and continuou
   * *requires* - class was instantiated with valid inputs
   * *modifies* - `ecdf`, `control_sample`, `variant_sample`, `lift`
   * *effects* - creates and runs the monte carlo simulation, sets member variables to reflect model outputs
-* `plot()`
+* `plot(lift_plot_flag=True)`
+  * `lift_plot_flag` - boolean for plotting lift PDF and CDF (defaults to `True`)
   * *requires* - `fit()` has been run
   * *modifies* - none
   * *effects* - creates a 3 chart report of the AB test and opens it in a python viewer
