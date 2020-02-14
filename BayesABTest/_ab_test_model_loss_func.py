@@ -1,5 +1,4 @@
 """Loss function functionality for ab_test_model."""
-
 import numpy as np
 import scipy.special as sc
 #pylint: disable=no-member

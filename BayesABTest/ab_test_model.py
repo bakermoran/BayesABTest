@@ -5,6 +5,7 @@ from itertools import combinations
 from ._ab_test_model_plotting import _ab_test_plotting
 from ._ab_test_model_distributions import _ab_test_distributions
 from ._ab_test_model_loss_func import _ab_test_loss_functions
+from ._prior_distribution import _prior_distribution_params
 
 # empirical bayes method https://en.wikipedia.org/wiki/Empirical_Bayes_method
 # https://juanitorduz.github.io/intro_pymc3/
@@ -57,8 +58,8 @@ class ab_test_model(_ab_test_plotting, _ab_test_distributions, _ab_test_loss_fun
   def __init__(self, raw_data, metric, samples=10000, prior_func='beta',
                prior_info='informed', control_bucket_name='off',
                variant_bucket_names=['on'], bucket_col_name='bucket',
-               confidence_level=.05, compare_variants=False, debug=False,
-               prior_scale_factor=4):
+               confidence_level=.05, compare_variants=False,
+               prior_scale_factor=4, prior_parameters=None, debug=False):
     """
     Initialize an instance of BayesABTest with input variables.
     See class doc string for variable explanation.
@@ -68,7 +69,7 @@ class ab_test_model(_ab_test_plotting, _ab_test_distributions, _ab_test_loss_fun
                               prior_info, control_bucket_name,
                               variant_bucket_names, bucket_col_name,
                               confidence_level, compare_variants,
-                              debug, prior_scale_factor)
+                              prior_scale_factor, prior_parameters, debug)
 
     # PUBLIC VARIABLES
     self.debug = debug
@@ -88,12 +89,16 @@ class ab_test_model(_ab_test_plotting, _ab_test_distributions, _ab_test_loss_fun
       self.variant_bucket_names = list(variant_bucket_names)
     else: self.variant_bucket_names = variant_bucket_names
     self.bucket_col_name = bucket_col_name
+    self.prior_parameters = prior_parameters
     self.confidence_level = confidence_level
     self.ecdf = {}
     self.prior_scale_factor = prior_scale_factor
     self.control_sample = []
     self.variant_samples = []
     self.lift = []
+
+    self.prior_params = _prior_distribution_params(self)
+    # TO DO: print prior params if debug
 
     self._trace = None
     self._buckets = self.raw_data[self.bucket_col_name].unique()
@@ -102,12 +107,12 @@ class ab_test_model(_ab_test_plotting, _ab_test_distributions, _ab_test_loss_fun
                            prior_info, control_bucket_name,
                            variant_bucket_names, bucket_col_name,
                            confidence_level, compare_variants,
-                           debug, prior_scale_factor):
+                           prior_scale_factor, prior_parameters, debug):
     """Check the input variables for errors. This class only supports
     the following inputs.
     """
     SUPPORTED_PRIOR_FUNC = ['beta', 'log-normal', 'normal', 'poisson'] # to do: naming is wrong cuz some are priors some are posts
-    SUPPORTED_PRIOR_INFO = ['informed', 'uninformed']
+    SUPPORTED_PRIOR_INFO = ['informed', 'uninformed', 'specified']
 
     if raw_data.empty: raise Exception('Input dataframe must contain data')
     if prior_func == 'beta' and ([np.any(x) for x in raw_data[metric].unique() if x not in list([0,1])] or [False])[0]:
@@ -122,6 +127,10 @@ class ab_test_model(_ab_test_plotting, _ab_test_distributions, _ab_test_loss_fun
     if prior_info not in SUPPORTED_PRIOR_INFO:
       raise Exception('Prior must be in' +
                       '[{}]'.format(', '.join(SUPPORTED_PRIOR_INFO)))
+    if prior_info == 'specified' and prior_parameters == None:
+      raise Exception('If prior_info == specifed, prior_parameters must not be None')
+    if prior_info != 'specified' and prior_parameters != None:
+      print('WARNING: prior_info was specified as {}. prior_parameters are being ignored'.format(prior_parameters))
     if control_bucket_name not in raw_data[bucket_col_name].unique():
       raise Exception('Input dataframe', bucket_col_name,
                       'column must contain values with:', control_bucket_name,
