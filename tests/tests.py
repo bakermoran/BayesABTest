@@ -166,7 +166,7 @@ def single_plot_posteriors_unit_test():
   visits.plot_posteriors(variants=['variant_2'])
 
 def single_plot_lift_unit_test():
-  """Test plot_posteriors."""
+  """Test plot_positive_lift."""
   rawdata = dh.create_poisson_data([15,17,20],
                                    ['control','variant_1','variant_2'],
                                    metric_name='visits', sample_length=3000)
@@ -186,7 +186,7 @@ def single_plot_lift_unit_test():
   visits.plot_positive_lift('variant_2','control')
 
 def single_plot_ecdf_unit_test():
-  """Test plot_posteriors."""
+  """Test plot_ecdf."""
   rawdata = dh.create_poisson_data([15,17,20],
                                    ['control','variant_1','variant_2'],
                                    metric_name='visits', sample_length=3000)
@@ -204,3 +204,75 @@ def single_plot_ecdf_unit_test():
   visits.plot_ecdf('variant_1','control')
   visits.plot_ecdf('variant_2','variant_1')
   visits.plot_ecdf('variant_2','control')
+
+
+def test_specified_prior():
+  """Test a user specified prior for several different types"""
+  raw_data_2vars = dh.create_conversion_data([.22,.23,.235],
+                                          ['control','variant_1','variant_2'],
+                                          metric_name='bind')
+  prior = {'alpha': 22, 'beta':100-22}
+  auto_bind = ab(raw_data_2vars, metric='bind',
+                            prior_info='specified', prior_func='beta',
+                            debug=True, control_bucket_name='control',
+                            variant_bucket_names=['variant_1','variant_2'],
+                            compare_variants=True, prior_parameters=prior,
+                            samples=1000)
+  auto_bind.fit()
+  auto_bind.plot(lift_plot_flag=True)
+
+
+  prior = {'mean': 650, 'var':1.5}
+  rawdata = dh.create_continuous_data([600,610,615],[1.5,1.5,1.5],
+                                   ['control','variant_1','variant_2'],
+                                   metric_name='total_premium')
+  premium = ab(rawdata, metric='total_premium',
+                            prior_info='specified', prior_func='log-normal',
+                            debug=True, control_bucket_name='control',
+                            variant_bucket_names=['variant_1','variant_2'],
+                            compare_variants=True, prior_parameters=prior,
+                            samples=1000)
+  premium.fit()
+  premium.plot()
+
+
+  prior = {'mean': 650, 'var':30}
+  rawdata = dh.create_continuous_data([600,601,602],[30,30,30],
+                                   ['control','variant_1','variant_2'],
+                                   metric_name='total_premium', log=False)
+  premium = ab(rawdata, metric='total_premium',
+                            prior_info='specified', prior_func='normal',
+                            debug=True, control_bucket_name='control',
+                            variant_bucket_names=['variant_1','variant_2'],
+                            compare_variants=True, prior_parameters=prior,
+                            samples=1000)
+  premium.fit()
+  premium.plot(lift_plot_flag=True)
+
+  prior = {'mean': 15, 'var':3}
+  rawdata = dh.create_poisson_data([15,17,20],
+                                   ['control','variant_1','variant_2'],
+                                   metric_name='visits', sample_length=3000)
+
+  visits = ab(rawdata, metric='visits',
+                            prior_info='specified', prior_func='poisson',
+                            debug=True, control_bucket_name='control',
+                            variant_bucket_names=['variant_1','variant_2'],
+                            compare_variants=True, prior_parameters=prior,
+                            samples=3000)
+  visits.fit()
+  visits.plot( lift_plot_flag=True)
+
+  prior = {'alpha': 8, 'beta':2}
+  rawdata = dh.create_poisson_data([15,17,20],
+                                   ['control','variant_1','variant_2'],
+                                   metric_name='visits', sample_length=3000)
+
+  visits = ab(rawdata, metric='visits',
+                            prior_info='specified', prior_func='poisson',
+                            debug=True, control_bucket_name='control',
+                            variant_bucket_names=['variant_1','variant_2'],
+                            compare_variants=True, prior_parameters=prior,
+                            samples=3000)
+  visits.fit()
+  visits.plot( lift_plot_flag=True)
