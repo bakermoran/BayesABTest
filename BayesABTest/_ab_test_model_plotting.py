@@ -1,5 +1,4 @@
 """Plotting functionality for ab_test_model."""
-
 import matplotlib.pyplot as plt
 import numpy as np
 import seaborn as sns

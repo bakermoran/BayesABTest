@@ -20,12 +20,18 @@ Conversion data uses the beta distribution as the conjugate prior, and continuou
   * `normal` - use for continuous response variables that on the interval (-inf, +inf)
   * `poisson` - use for discrete, greater than zero response variables (ex: arrivals per day, events per account, etc.)
 * `prior_info` - the prior belief to about the response varable. options include:
-  * `uninformed` - no prior belief about the response, all outcomes are equaly likely
-  * `informed` - uses the control as the prior belief, will add support to scale down that belief to a weaker belief
+  * `uninformed` - no prior belief about the response, all outcomes are equaly likely. No input required to use
+  * `informed` - uses and empirically informed prior (informed by the control data), and weakens this prior by `prior_scale_factor`
+  * `specified` - allows for a user to input prior parameters
+* `prior_parameters` - `prior_info` must be set to `specified`. This must be a dictionary with the following key value pairs:
+  * `prior_func` = `beta` - keys are `alpha` and `beta`
+  * `prior_func` = `log-normal` - keys are `mean` and `var`
+  * `prior_func` = `normal` - keys are `mean` and `var`
+  * `prior_func` = `poisson` - keys are `alpha` and `beta` OR `mean` and `var`
 * `confidence_level` - value for the confidence interval on the CDF chart (defaults to `0.05`)
 * `compare_variants` - boolean for comparing the variants to each other. Control to each variant is always done (unless there are too many variants to plot). If there are few enough variants, the comparisons for variants will be plotted. (defaults to `False`)
 * `debug` - boolean to print out extra output for debugging purposes (defaults to `False`)
-* `prior_scale_factor` - factor to scale an informed prior by (see empirical [empirical bayes](https://en.wikipedia.org/wiki/Empirical_Bayes_method)) (defaults to `4`)
+* `prior_scale_factor` - factor to scale an empirically informed prior by (defaults to `4`)
 
 ## Public class methods and variables
 
