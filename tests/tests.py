@@ -2,6 +2,7 @@
 
 from BayesABTest import ab_test_model as ab
 import data_helpers as dh
+from matplotlib import pyplot as plt
 
 
 def one_variant_conversion():
@@ -13,6 +14,7 @@ def one_variant_conversion():
                    samples=1000)
     auto_bind.fit()
     auto_bind.plot()
+    plt.show()
     auto_bind.loss_function()
 
 
@@ -27,6 +29,7 @@ def one_variant_continuous():
                        debug=True, samples=1000)
     premium_small.fit()
     premium_small.plot()
+    plt.show()
 
     # test between off and on buckets (big difference)
     rawdata_big = dh.create_continuous_data([600, 700], [1.5, 1.5],
@@ -37,6 +40,7 @@ def one_variant_continuous():
                      debug=True, samples=1000)
     premium_big.fit()
     premium_big.plot()
+    plt.show()
 
 
 def one_variant_continuous_small_mean():
@@ -55,6 +59,7 @@ def one_variant_continuous_small_mean():
                        samples=1000)
     premium_small.fit()
     premium_small.plot()
+    plt.show()
 
 
 def two_variants_conversion():
@@ -71,6 +76,7 @@ def two_variants_conversion():
                    compare_variants=True, samples=1000)
     auto_bind.fit()
     auto_bind.plot(lift_plot_flag=True)
+    plt.show()
 
 
 def conversion_negative_variants():
@@ -90,6 +96,7 @@ def conversion_negative_variants():
                    compare_variants=True, samples=1000)
     auto_bind.fit()
     auto_bind.plot(lift_plot_flag=True)
+    plt.show()
 
 
 def two_variants_continuous():
@@ -108,6 +115,7 @@ def two_variants_continuous():
                  samples=1000)
     premium.fit()
     premium.plot()
+    plt.show()
 
 
 def three_variants_continuous():
@@ -127,6 +135,7 @@ def three_variants_continuous():
                  samples=1000)
     premium.fit()
     premium.plot()
+    plt.show()
 
 
 def four_variants_continuous():
@@ -147,6 +156,7 @@ def four_variants_continuous():
                  compare_variants=False, samples=1000)
     premium.fit()
     premium.plot(lift_plot_flag=True)
+    plt.show()
 
 
 def two_variants_continuous_normal():
@@ -165,6 +175,7 @@ def two_variants_continuous_normal():
                  compare_variants=True, samples=1000)
     premium.fit()
     premium.plot(lift_plot_flag=True)
+    plt.show()
 
 
 def two_variants_poisson():
@@ -180,6 +191,7 @@ def two_variants_poisson():
                 compare_variants=True, samples=3000)
     visits.fit()
     visits.plot(lift_plot_flag=True)
+    plt.show()
 
 
 def single_plot_posteriors_unit_test():
@@ -199,13 +211,21 @@ def single_plot_posteriors_unit_test():
                 compare_variants=True, samples=3000)
     visits.fit()
     visits.plot_posteriors()
+    plt.show()
     visits.plot_posteriors(variants=['control', 'variant_1', 'variant_2'])
+    plt.show()
     visits.plot_posteriors(variants=['variant_1', 'variant_2'])
+    plt.show()
     visits.plot_posteriors(variants=['control', 'variant_2'])
+    plt.show()
     visits.plot_posteriors(variants=['control', 'variant_1'])
+    plt.show()
     visits.plot_posteriors(variants=['variant_1'])
+    plt.show()
     visits.plot_posteriors(variants=['control'])
+    plt.show()
     visits.plot_posteriors(variants=['variant_2'])
+    plt.show()
 
 
 def single_plot_lift_unit_test():
@@ -225,12 +245,18 @@ def single_plot_lift_unit_test():
                 compare_variants=True, samples=3000)
     visits.fit()
     visits.plot_positive_lift('control', 'variant_1')
+    plt.show()
     visits.plot_positive_lift('variant_1', 'variant_2')
+    plt.show()
     visits.plot_positive_lift('control', 'variant_2')
+    plt.show()
 
     visits.plot_positive_lift('variant_1', 'control')
+    plt.show()
     visits.plot_positive_lift('variant_2', 'variant_1')
+    plt.show()
     visits.plot_positive_lift('variant_2', 'control')
+    plt.show()
 
 
 def single_plot_ecdf_unit_test():
@@ -250,12 +276,18 @@ def single_plot_ecdf_unit_test():
                 compare_variants=True, samples=3000)
     visits.fit()
     visits.plot_ecdf('control', 'variant_1')
+    plt.show()
     visits.plot_ecdf('variant_1', 'variant_2')
+    plt.show()
     visits.plot_ecdf('control', 'variant_2')
+    plt.show()
 
     visits.plot_ecdf('variant_1', 'control')
+    plt.show()
     visits.plot_ecdf('variant_2', 'variant_1')
+    plt.show()
     visits.plot_ecdf('variant_2', 'control')
+    plt.show()
 
 
 def test_specified_prior():
@@ -274,6 +306,7 @@ def test_specified_prior():
                    samples=1000)
     auto_bind.fit()
     auto_bind.plot(lift_plot_flag=True)
+    plt.show()
 
     prior = {'mean': 650, 'var': 1.5}
     rawdata = dh.create_continuous_data([600, 610, 615],
@@ -288,6 +321,7 @@ def test_specified_prior():
                  samples=1000)
     premium.fit()
     premium.plot()
+    plt.show()
 
     prior = {'mean': 650, 'var': 30}
     rawdata = dh.create_continuous_data([600, 601, 602],
@@ -302,6 +336,7 @@ def test_specified_prior():
                  samples=1000)
     premium.fit()
     premium.plot(lift_plot_flag=True)
+    plt.show()
 
     prior = {'mean': 15, 'var': 3}
     rawdata = dh.create_poisson_data([15, 17, 20],
@@ -316,6 +351,7 @@ def test_specified_prior():
                 samples=3000)
     visits.fit()
     visits.plot(lift_plot_flag=True)
+    plt.show()
 
     prior = {'alpha': 8, 'beta': 2}
     rawdata = dh.create_poisson_data([15, 17, 20],
@@ -330,3 +366,4 @@ def test_specified_prior():
                 samples=3000)
     visits.fit()
     visits.plot(lift_plot_flag=True)
+    plt.show()

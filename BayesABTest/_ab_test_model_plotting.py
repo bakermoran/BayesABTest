@@ -215,7 +215,6 @@ class _ab_test_plotting(_ab_test_utils):
                                  'control_bucket_name, or '
                                  'variant_bucket_names'))
         self._plot_posteriors(variants)
-        plt.show()
 
     def plot_positive_lift(self, variant_one, variant_two):
         """Plot the positive lift pdt between variant_one and variant_two.
@@ -267,7 +266,6 @@ class _ab_test_plotting(_ab_test_utils):
                                      sample2+len(self.variant_bucket_names)-1],
                                      sample1=sample1,
                                      sample2=sample2)
-        plt.show()
 
     def plot_ecdf(self, variant_one, variant_two):
         """Plot the empirical cdf for the lift b/w variant_one and variant_two.
@@ -314,4 +312,3 @@ class _ab_test_plotting(_ab_test_utils):
             self._plot_ecdf(name)
             plt.ylabel('Cumulative Lift: {0} vs {1}'
                        .format(variant_two, variant_one))
-        plt.show()
