@@ -129,5 +129,4 @@ dmypy.json
 .pyre/
 
 # Project specific files
-test_controller.py
 .vscode/
