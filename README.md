@@ -12,7 +12,7 @@ Conversion data uses the beta distribution as the conjugate prior, and continuou
 * `metric` - column name in `raw_data` for the response variable
 * `bucket_col_name` - column name in `raw_data` for the bucket (defaults to `bucket`)
 * `control_bucket_name` - value in `bucket_col_name` for the control bucket (defaults to `off`)
-* `variant_bucket_name` - value in `bucket_col_name` for the variant bucket (defaults to `on`)
+* `variant_bucket_names` - list of values in `bucket_col_name` for the variant bucket (defaults to `on`)
 * `samples` - number of samples to run the monte carlo simulation, must be 1,000 and 50,000 (defaults to 10,000)
 * `prior_func` - the type of distribution to use for the prior. options include:
   * `beta` - use for conversion rates. bounded on the interval [0,1]
@@ -45,7 +45,19 @@ Conversion data uses the beta distribution as the conjugate prior, and continuou
   * `lift_plot_flag` - boolean for plotting lift PDF and CDF (defaults to `True`)
   * *requires* - `fit()` has been run
   * *modifies* - none
-  * *effects* - creates a 3 chart report of the AB test and opens it in a python viewer
+  * *effects* - creates a 3 chart report of the AB test. (must show with `matplotlib.pylot.show()`)
+* `plot_posteriors(variants=[]):`
+  * *requires* - variants is a list of variant names in `control_bucket_name` and/or `variant_bucket_names`
+  * *modifies* - creates a posterior plot of these variants (must show with `matplotlib.pylot.show()`)
+  * *effects* - creates and runs the monte carlo simulation, sets member variables to reflect model outputs
+* `plot_positive_lift(variant_one, variant_two)`
+  * *requires* - variant_one and variant_two are variant names in `control_bucket_name` and/or `variant_bucket_names`
+  * *modifies* - none
+  * *effects* - creates a positive lift plot between these variants (must show with `matplotlib.pylot.show()`)
+* `plot_ecdf(variant_one, variant_two)`
+  * *requires* - variant_one and variant_two are variant names in `control_bucket_name` and/or `variant_bucket_names`
+  * *modifies* - none
+  * *effects* - creates an empirical cumulative distribution plot of these variants lift (must show with `matplotlib.pylot.show()`)
 
 ### Variables
 

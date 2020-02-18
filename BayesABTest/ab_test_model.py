@@ -273,7 +273,6 @@ class ab_test_model(_ab_test_plotting,
         # PDFS ONLY
         if not lift_plot_flag:
             self._plot_posteriors()
-            plt.show()
 
         # ONE VARIANT
         elif len(self.variant_bucket_names) == 1:
@@ -285,7 +284,6 @@ class ab_test_model(_ab_test_plotting,
             self._plot_positive_lift(lift)
             plt.subplot(2, 1, 2)
             self._plot_ecdf(variant_name)
-            plt.show()
 
         # MULTIPLE VARIANTS
         else:
@@ -317,4 +315,3 @@ class ab_test_model(_ab_test_plotting,
                            '_' + str(combs[num][0])
                     self._plot_ecdf(name)
                     loc += 2
-            plt.show()
