@@ -1,11 +1,13 @@
 """run file for ab_test_model test functions."""
 
-import tests as t
+import model_tests as mt
+import dist_explorer_tests as dt
 
 
 def run_test():
     """Run a subset of the test functions."""
-    t.two_variants_poisson()
+    mt.two_variants_poisson()
+    print('SUCCESS')
 
 
 def run_basic_tests():
@@ -17,21 +19,31 @@ def run_basic_tests():
         if '__' in test or len(test) <= 2:
             continue
         print('+ running test {}()'.format(test))
-        getattr(t, test)()
-        print('SUCCESS')
+        getattr(mt, test)()
+    print('SUCCESS')
 
 
 def run_all():
-    """Run every test function."""
-    for test in dir(t):
+    """Run every test function for ab test model."""
+    for test in dir(mt):
         if '__' in test or len(test) <= 2:
             continue
         print('+ running test {}()'.format(test))
-        getattr(t, test)()
-        print('SUCCESS')
+        getattr(mt, test)()
+    print('SUCCESS')
+
+
+def run_prior_tests():
+    """Run every test function for prior plotting."""
+    dt.test_beta()
+    dt.test_gamma()
+    dt.test_poisson()
+    dt.test_lognormal()
+    print('SUCCESS')
 
 
 if __name__ == '__main__':
-    run_basic_tests()
+    run_prior_tests()
+    # run_basic_tests()
     # run_test()
     # run_all()

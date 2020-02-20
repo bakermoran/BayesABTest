@@ -9,6 +9,7 @@ chart for test results.
 # pylint: disable=unused-import
 
 from .ab_test_model import ab_test_model  # noqa
+from .ab_test_dist_explorer import *  # noqa
 
 # to do: log normal and beta 'get prior' and 'get posteriors' should have the
 # same interface, but they dont
