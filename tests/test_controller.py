@@ -5,8 +5,9 @@ import dist_explorer_tests as dt
 
 
 def run_test():
-    """Run a subset of the test functions."""
-    mt.two_variants_poisson()
+    """Run a a single test function to verify basic run-ability."""
+    # mt.two_variants_conversion()
+    mt.one_variant_continuous()
     print('SUCCESS')
 
 
@@ -43,7 +44,8 @@ def run_prior_tests():
 
 
 if __name__ == '__main__':
-    run_prior_tests()
+    run_test()
     # run_basic_tests()
-    # run_test()
     # run_all()
+
+    # run_prior_tests()
