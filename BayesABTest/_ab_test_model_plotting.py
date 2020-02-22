@@ -22,19 +22,13 @@ class _ab_test_plotting(_ab_test_utils):
                 plotted. Otherwise, the must be contained in raw_data
                 (default: {[]}).
         """
-        colors = ['blue', 'red', 'green', 'yellow', 'purple', 'cyan']
-        colors += colors
-        legend_labels = []
-        if variants == [] or self.control_bucket_name in variants:
-            sns.kdeplot(self.control_sample, shade=True, color=colors[0])
-            legend_labels.append(self.control_bucket_name)
-        for i in range(0, len(self.variant_bucket_names)):
-            if variants == [] or self.variant_bucket_names[i] in variants:
-                sns.kdeplot(self.variant_samples[i],
-                            shade=True,
-                            color=colors[i+1])
-                legend_labels.append(self.variant_bucket_names[i])
-        plt.legend(labels=legend_labels, loc='upper right')
+        if variants == []:
+            variants = list(self.posteriors.keys())
+        for variant in variants:
+            sns.kdeplot(self.posteriors[variant].get_posterior_sample(),
+                        shade=True,
+                        color=self.posteriors[variant].get_color())
+        plt.legend(labels=variants, loc='upper right')
         if self.prior_func == 'beta':
             plt.xlabel('Conversion Rate')
         elif self.prior_func == 'log-normal' or self.prior_func == 'normal':
@@ -51,22 +45,19 @@ class _ab_test_plotting(_ab_test_utils):
             labels = self._format_axis_as_percent(locs, labels)
             plt.xticks(locs, labels=labels)
 
-    def _plot_positive_lift(self, lift, sample1=None, sample2=None):
+    def _plot_positive_lift(self, numerator_name, denominator_name):
         """Plot the lift vector as a kernel density estimation.
 
         This is a private function. For a public interface, see
             plot_positive_lift().
 
         Arguments:
-            lift {list} -- The lift vector to be plotted
-
-        Keyword Arguments:
-            sample1 {int} -- position in variant names vector.
-                This is the denominator. -1 for sample1 means it is the
-                control. (default: {None})
-            sample2 {int} -- position in variant names vector.
-                This is the numerator. (default: {None})
+            numerator_name {str} -- The name of the numerator in the lift
+                calculation.
+            denominator_name {str} -- The name of the numerator in the lift
+                calculation.
         """
+        lift = self.lift[numerator_name][denominator_name]
         ax = sns.kdeplot(lift, shade=True)
         line = ax.get_lines()[-1]
         x, y = line.get_data()
@@ -75,14 +66,7 @@ class _ab_test_plotting(_ab_test_utils):
         x, y = x[mask], y[mask]
         ax.fill_between(x, y1=y, alpha=0.5, facecolor='red')
         if len(self.variant_bucket_names) > 1:
-            sample1 = int(sample1)
-            sample2 = int(sample2)
-            if sample1 == -1:
-                denom_name = self.control_bucket_name
-            else:
-                denom_name = self.variant_bucket_names[sample1]
-            num_name = self.variant_bucket_names[sample2]
-            title = num_name + ' vs ' + denom_name
+            title = numerator_name + ' vs ' + denominator_name
             ax.set_ylabel(title, rotation=0, fontstyle='italic')
         plt.vlines(0.0, ymin=0, ymax=ylim, linestyle='dotted')
         plt.xlabel('Lift')
@@ -98,19 +82,20 @@ class _ab_test_plotting(_ab_test_utils):
         labels = self._format_axis_as_percent(locs, labels)
         plt.xticks(locs, labels=labels)
 
-    def _plot_ecdf(self, variant_name):
+    def _plot_ecdf(self, numerator_name, denominator_name):
         """Plot the empirical cumulative distribution function.
 
         This is a private function. For a public interface, see
             plot_ecdf().
 
         Arguments:
-            variant_name {str} -- the string of the variant combo to be
-                plotted. This is purely an internal convention, and is not
-                meant to be exposed. This is generated within the model.
+            numerator_name {str} -- The name of the numerator in the lift
+                calculation.
+            denominator_name {str} -- The name of the numerator in the lift
+                calculation.
         """
-        x = self.ecdf[variant_name]['x']
-        y = self.ecdf[variant_name]['y']
+        x = self.ecdf[numerator_name][denominator_name]['x']
+        y = self.ecdf[numerator_name][denominator_name]['y']
 
         lower_bound = x[y.index(min(y,
                                     key=lambda x:
@@ -120,8 +105,7 @@ class _ab_test_plotting(_ab_test_utils):
                                     key=lambda x:
                                     abs(x-(1-self.confidence_level))))]
 
-        sns.lineplot(x=self.ecdf[variant_name]['x'],
-                     y=self.ecdf[variant_name]['y'])
+        sns.lineplot(x=x, y=y)
         ci = 1 - self.confidence_level
         title = ('Median Lift was {0:.2%}, with a '
                  '{1:.0%} CI of [{2:.2%}, {3:.2%}]'.format(median,
@@ -142,61 +126,73 @@ class _ab_test_plotting(_ab_test_utils):
 
     def _calc_ecdf(self):
         """Calculate the empirical CDFs and set member var."""
-        if self.compare_variants:
-            comparisons = list(range(0, len(self.variant_bucket_names)))
-            combs = list(combinations(comparisons, 2))
-        num_variants = len(self.variant_bucket_names)
-        for index, lift in enumerate(self.lift):
-            raw_data = np.array(lift)
-            cdfx = np.sort(np.unique(self.lift))
-            x_values = np.linspace(start=min(cdfx),
-                                   stop=max(cdfx),
-                                   num=len(cdfx))
-            size_data = raw_data.size
-            y_values = []
-            for i in x_values:
-                temp = raw_data[raw_data <= i]
-                value = temp.size / size_data
-                y_values.append(value)
-            temp = {}
-            temp['x'] = x_values
-            temp['y'] = y_values
-            if index < num_variants:
-                self.ecdf[self.variant_bucket_names[index]] = temp
-            elif self.compare_variants and index >= num_variants:
-                name = 'bucket_comparison' + \
-                            str(combs[index-num_variants][1]) + \
-                            '_' + str(combs[index-num_variants][0])
-                self.ecdf[name] = temp
+        for numerator, vals in self.lift.items():
+            for denominator, lift in vals.items():
+                raw_data = np.array(lift)
+                cdfx = np.sort(np.unique(lift))
+                x_values = np.linspace(start=min(cdfx),
+                                       stop=max(cdfx),
+                                       num=len(cdfx))
+                size_data = raw_data.size
+                y_values = []
+                for i in x_values:
+                    temp = raw_data[raw_data <= i]
+                    value = temp.size / size_data
+                    y_values.append(value)
+                temp = {}
+                temp['x'] = x_values
+                temp['y'] = y_values
+                if numerator not in self.ecdf.keys():
+                    self.ecdf[numerator] = {}
+                    self.ecdf[numerator][denominator] = temp
+                else:
+                    self.ecdf[numerator][denominator] = temp
 
     def _calc_lift(self):
-        """Calculate the lift of the variants over the control samples."""
-        for index, sample in enumerate(self.variant_samples):
-            self.lift.append(sample / self.control_sample - 1)
+        """Calculate the lift of the variants over the others."""
+        for key, val in self.posteriors.items():
+            if key == self.control_bucket_name:
+                continue
+            lift_over_control = np.divide(val.get_posterior_sample(),
+                                          self.posteriors[
+                                           self.control_bucket_name]
+                                          .get_posterior_sample()) - 1
+            if key not in self.lift.keys():
+                self.lift[key] = {}
+                self.lift[key][self.control_bucket_name] = lift_over_control
+            else:
+                self.lift[key][self.control_bucket_name] = lift_over_control
             if self.debug:
                 percent_positive_lift = sum(i > 0 for i in
-                                            self.lift[index]) / \
-                                            len(self.lift[index])
+                                            lift_over_control) / \
+                                            len(lift_over_control)
                 print('percent positive lift for {0} over {1} = {2:.2%}'
-                      .format(self.variant_bucket_names[index],
-                              self.control_bucket_name,
+                      .format(key, self.control_bucket_name,
                               percent_positive_lift))
 
         if self.compare_variants:
             comparisons = list(range(0, len(self.variant_bucket_names)))
             combs = combinations(comparisons, 2)
             for combination in combs:
-                self.lift.append(np
-                                 .array(self.variant_samples[combination[1]])
-                                 / np.array(self
-                                            .variant_samples[
-                                                   combination[0]]) - 1)
+                denom = self.posteriors[
+                            self.variant_bucket_names[combination[0]]]
+                num = self.posteriors[
+                            self.variant_bucket_names[combination[1]]]
+                lift = np.divide(num.get_posterior_sample(),
+                                 denom.get_posterior_sample()) - 1
+                if num.get_variant_name() not in self.lift.keys():
+                    self.lift[num.get_variant_name()] = {}
+                    self.lift[num.get_variant_name()][
+                        denom.get_variant_name()] = lift
+                else:
+                    self.lift[num.get_variant_name()][
+                        denom.get_variant_name()] = lift
                 if self.debug:
-                    percent_positive_lift = sum(i > 0 for i in self.lift[-1]) \
-                                                / len(self.lift[-1])
+                    percent_positive_lift = sum(i > 0 for i in lift) \
+                                                / len(lift)
                     print('percent positive lift for {0} over {1} = {2:.2%}'
-                          .format(self.variant_bucket_names[combination[1]],
-                                  self.variant_bucket_names[combination[0]],
+                          .format(num.get_variant_name(),
+                                  denom.get_variant_name(),
                                   percent_positive_lift))
 
     def plot_posteriors(self, variants=[]):
@@ -206,14 +202,13 @@ class _ab_test_plotting(_ab_test_utils):
             variants {list} -- List of variant names to be plotted.
             If variants is not set, all are plotted, otherwise, the variants
             in the list are plotted. Variants must only have items in
-            control_bucket_name, or variant_bucket_names (default: {[]}).
+            bucket_col_name (default: {[]}).
         """
-        for var in variants:
-            if var not in self.variant_bucket_names \
-                    and var != self.control_bucket_name:
-                raise Exception(('variants must only have items in '
-                                 'control_bucket_name, or '
-                                 'variant_bucket_names'))
+        if variants != []:
+            for var in variants:
+                if var not in self.posteriors.keys():
+                    raise ValueError(('Variants must only be a value in '
+                                      'bucket_col_name'))
         self._plot_posteriors(variants)
 
     def plot_positive_lift(self, variant_one, variant_two):
@@ -221,94 +216,52 @@ class _ab_test_plotting(_ab_test_utils):
 
         Arguments:
         variant_one and variant_two should not be the same
-            variant_one {str} -- should be either one of control_bucket_name
-                or in variant_bucket_names.
-            variant_two {str} -- should be either one of control_bucket_name
-                or in variant_bucket_names.
+            variant_one {str} -- should be a value in bucket_col_name.
+            variant_two {str} -- should be a value in bucket_col_name.
         """
         if variant_one == variant_two:
-            raise Exception('variant_one and variant_two cannot be the same')
-        if variant_one != self.control_bucket_name and \
-                variant_one not in self.variant_bucket_names:
-            raise Exception('variant_one must be one of {0}, or {1}'
-                            .format(self.control_bucket_name,
-                                    self.variant_bucket_names))
-        if variant_one != self.control_bucket_name and \
-                variant_one not in self.variant_bucket_names:
-            raise Exception('variant_one must be one of {0}, or {1}'
-                            .format(self.control_bucket_name,
-                                    self.variant_bucket_names))
+            raise ValueError('variant_one and variant_two cannot be the same')
+        if variant_one not in self.posteriors.keys() or \
+                variant_two not in self.posteriors.keys():
+            raise ValueError(('Variants must only be a value in column '
+                              '{}'.format(self.bucket_col_name)))
 
-        if variant_one == self.control_bucket_name or \
-                variant_two == self.control_bucket_name:
-            sample1 = -1
-            if variant_two != self.control_bucket_name:
-                sample2 = self.variant_bucket_names.index(variant_two)
-            else:
-                sample2 = self.variant_bucket_names.index(variant_one)
-        else:
+        if variant_one != self.control_bucket_name and \
+                variant_two != self.control_bucket_name:
             if not self.compare_variants:
-                # to do: this is dumb, shouldnt be a requirement
-                raise Exception("""compare_variants must be set to true in
-                                order to compare {0} and {1}"""
-                                .format(variant_one, variant_two))
-            sample1 = min(self.variant_bucket_names.index(variant_one),
-                          self.variant_bucket_names.index(variant_two))
-            sample2 = max(self.variant_bucket_names.index(variant_one),
-                          self.variant_bucket_names.index(variant_two))
-
-        if sample1 == -1:
-            self._plot_positive_lift(self.lift[sample2],
-                                     sample1=-1,
-                                     sample2=sample2)
+                raise RuntimeError('Compare_variants must be set to true in '
+                                   'order to compare {0} and {1}'
+                                   .format(variant_one, variant_two))
+        if variant_one in self.lift.keys() and \
+                variant_two in self.lift[variant_one].keys():
+            self._plot_positive_lift(numerator_name=variant_one,
+                                     denominator_name=variant_two)
         else:
-            self._plot_positive_lift(self.lift[
-                                     sample2+len(self.variant_bucket_names)-1],
-                                     sample1=sample1,
-                                     sample2=sample2)
+            self._plot_positive_lift(numerator_name=variant_two,
+                                     denominator_name=variant_one)
 
     def plot_ecdf(self, variant_one, variant_two):
         """Plot the empirical cdf for the lift b/w variant_one and variant_two.
 
         Arguments:
-            variant_one {str} -- should be either one of control_bucket_name
-                or in variant_bucket_names.
-            variant_two {str} -- should be either one of control_bucket_name
-                or in variant_bucket_names.
+            variant_one {str} -- should be a value in bucket_col_name.
+            variant_two {str} -- should be a value in bucket_col_name.
         """
         if variant_one == variant_two:
-            raise Exception('variant_one and variant_two cannot be the same')
-        if variant_one != self.control_bucket_name and \
-                variant_one not in self.variant_bucket_names:
-            raise Exception('variant_one must be one of {0}, or {1}'
-                            .format(self.control_bucket_name,
-                                    self.variant_bucket_names))
-        if variant_one != self.control_bucket_name and \
-                variant_one not in self.variant_bucket_names:
-            raise Exception('variant_one must be one of {0}, or {1}'
-                            .format(self.control_bucket_name,
-                                    self.variant_bucket_names))
+            raise ValueError('variant_one and variant_two cannot be the same')
+        if variant_one not in self.posteriors.keys() or \
+                variant_two not in self.posteriors.keys():
+            raise ValueError(('Variants must only be a value in column '
+                              '{}'.format(self.bucket_col_name)))
 
-        if variant_one == self.control_bucket_name:
-            self._plot_ecdf(variant_two)
+        if variant_one in self.ecdf.keys() and \
+                variant_two in self.ecdf[variant_one].keys():
+            self._plot_ecdf(numerator_name=variant_one,
+                            denominator_name=variant_two)
             plt.ylabel('Cumulative Lift: {0} vs {1}'
                        .format(variant_two, variant_one))
-        elif variant_two == self.control_bucket_name:
-            self._plot_ecdf(variant_one)
-            plt.ylabel('Cumulative Lift: {0} vs {1}'
-                       .format(variant_one, variant_two))
-        elif self.variant_bucket_names.index(variant_one) > \
-                self.variant_bucket_names.index(variant_two):
-            name = 'bucket_comparison' + \
-                    str(self.variant_bucket_names.index(variant_one)) + \
-                    '_' + str(self.variant_bucket_names.index(variant_two))
-            self._plot_ecdf(name)
-            plt.ylabel('Cumulative Lift: {0} vs {1}'
-                       .format(variant_one, variant_two))
         else:
-            name = 'bucket_comparison' + \
-                    str(self.variant_bucket_names.index(variant_two)) + \
-                    '_' + str(self.variant_bucket_names.index(variant_one))
-            self._plot_ecdf(name)
+            self._plot_ecdf(numerator_name=variant_two,
+                            denominator_name=variant_one)
             plt.ylabel('Cumulative Lift: {0} vs {1}'
-                       .format(variant_two, variant_one))
+                       .format(variant_one, variant_two))
