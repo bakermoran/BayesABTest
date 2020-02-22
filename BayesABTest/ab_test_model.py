@@ -8,6 +8,7 @@ from ._ab_test_model_plotting import _ab_test_plotting
 from ._ab_test_model_distributions import _ab_test_distributions
 from ._ab_test_model_loss_func import _ab_test_loss_functions
 from ._prior_distribution import _prior_distribution_params
+from ._posterior_distribution import posterior_distribution
 
 # empirical bayes method https://en.wikipedia.org/wiki/Empirical_Bayes_method
 # https://juanitorduz.github.io/intro_pymc3/
@@ -52,9 +53,9 @@ class ab_test_model(_ab_test_plotting,
 
     def __init__(self, raw_data, metric, samples=10000, prior_func='beta',
                  prior_info='informed', control_bucket_name='off',
-                 variant_bucket_names=['on'], bucket_col_name='bucket',
-                 confidence_level=.05, compare_variants=False,
-                 prior_scale_factor=4, prior_parameters=None, debug=False):
+                 bucket_col_name='bucket', confidence_level=.05,
+                 compare_variants=False, prior_scale_factor=4,
+                 prior_parameters=None, debug=False):
         """
         Initialize an instance of BayesABTest with input variables.
 
@@ -90,8 +91,6 @@ class ab_test_model(_ab_test_plotting,
 
             control_bucket_name {str} -- value in bucket_col_name for the
                 control bucket (default: {'off'})
-            variant_bucket_names {list} -- value in bucket_col_name for the
-                variant bucket (default: {['on']})
             bucket_col_name {str} -- column name in raw_data for the
                 bucket  (default: {'bucket'})
             confidence_level {float} -- value for the confidence interval
@@ -107,12 +106,32 @@ class ab_test_model(_ab_test_plotting,
             debug {bool} -- [boolean to print out extra output for debugging
             purposes (default: {False})
         """
-        # run input checking
+        buckets = raw_data[bucket_col_name].unique()
         self._error_check_inputs(raw_data, metric, samples, prior_func,
-                                 prior_info, control_bucket_name,
-                                 variant_bucket_names, bucket_col_name,
-                                 confidence_level, compare_variants,
-                                 prior_scale_factor, prior_parameters, debug)
+                                 prior_info, control_bucket_name, buckets,
+                                 bucket_col_name, confidence_level,
+                                 compare_variants, prior_scale_factor,
+                                 prior_parameters, debug)
+
+        self.posteriors = {}
+        self.control_bucket_name = control_bucket_name
+        self.variant_bucket_names = []
+
+        colors = ['red', 'green', 'yellow', 'purple', 'cyan']
+        colors += colors
+        color_index = 0
+        for bucket in buckets:
+            if bucket == control_bucket_name:
+                self.posteriors[bucket] = posterior_distribution(bucket,
+                                                                 'blue',
+                                                                 prior_func)
+            else:
+                self.posteriors[bucket] = posterior_distribution(
+                                                bucket, colors[color_index],
+                                                prior_func)
+                color_index += 1
+        self.variant_bucket_names = list(self.posteriors.keys())
+        self.variant_bucket_names.remove(self.control_bucket_name)
 
         # PUBLIC VARIABLES
         self.debug = debug
@@ -122,38 +141,29 @@ class ab_test_model(_ab_test_plotting,
         self.metric = metric
         self.samples = samples
         self.compare_variants = compare_variants
-        if samples * (1 + len(variant_bucket_names)) > 50000:
-            print('WARNING: This is a large amount of sampling.',
-                  'Run time may be long.')
-            print('Running', samples, 'on', 1 + len(variant_bucket_names),
-                  'PDFs, for a total of',
-                  samples * (1 + len(variant_bucket_names)),
-                  'samples')
-        self.control_bucket_name = control_bucket_name
-        if not isinstance(variant_bucket_names, list):
-            self.variant_bucket_names = list(variant_bucket_names)
-        else:
-            self.variant_bucket_names = variant_bucket_names
         self.bucket_col_name = bucket_col_name
         self.prior_parameters = prior_parameters
         self.confidence_level = confidence_level
-        self.ecdf = {}
         self.prior_scale_factor = prior_scale_factor
-        self.control_sample = []
-        self.variant_samples = []
-        self.lift = []
+
+        if samples * (1 + len(self.variant_bucket_names)) > 50000:
+            print('WARNING: This is a large amount of sampling.',
+                  'Run time may be long.')
+            print('Running', samples, 'on', 1 + len(self.variant_bucket_names),
+                  'PDFs, for a total of',
+                  samples * (1 + len(self.variant_bucket_names)),
+                  'samples')
+        self.ecdf = {}
+        self.lift = {}
 
         self.prior_params = _prior_distribution_params(self)
-        # TO DO: print prior params if debug
-
         self._trace = None
-        self._buckets = self.raw_data[self.bucket_col_name].unique()
 
     def _error_check_inputs(self, raw_data, metric, samples, prior_func,
-                            prior_info, control_bucket_name,
-                            variant_bucket_names, bucket_col_name,
-                            confidence_level, compare_variants,
-                            prior_scale_factor, prior_parameters, debug):
+                            prior_info, control_bucket_name, buckets,
+                            bucket_col_name, confidence_level,
+                            compare_variants, prior_scale_factor,
+                            prior_parameters, debug):
         """Check the input variables for errors.
 
         This class only supports the inputs in __init__.
@@ -190,24 +200,12 @@ class ab_test_model(_ab_test_plotting,
                             'column must contain values with:',
                             control_bucket_name,
                             'as the control bucket name')
-        if compare_variants and len(variant_bucket_names) < 2:
+        if compare_variants and len(buckets) - 1 < 2:
             raise Exception(('If compare_variants is True, there must be '
                             'at least 2 variants'))
-        if len(variant_bucket_names) > 10:
+        if len(buckets) - 1 > 10:
             raise Exception(('Greater than 10 variants is not currently '
                             'supported'))
-        for name in variant_bucket_names:
-            if name not in raw_data[bucket_col_name].unique():
-                raise Exception('Input dataframe', bucket_col_name,
-                                'column must contain values with:', name,
-                                'as a variant bucket name')
-        for name in raw_data[bucket_col_name].unique():
-            if name not in variant_bucket_names \
-                    and name != control_bucket_name:
-                raise Exception('Input dataframe contains value ', name, 'in',
-                                bucket_col_name,
-                                'that is not a variant name in',
-                                'variant_bucket_names')
         if bucket_col_name not in raw_data.columns:
             raise Exception('Input dataframe must contain column:',
                             bucket_col_name)
@@ -232,8 +230,8 @@ class ab_test_model(_ab_test_plotting,
 
         if self.debug:
             summary = pm.summary(self._trace)
-            print('Posterior sampling distribution summary statistics' +
-                  '\n {}'.format(summary[['mean', 'sd']].round(4)))
+            print('Posterior sampling distribution summary statistics \n {}'
+                  .format(summary[['mean', 'sd']].round(4)))
 
         self._calc_lift()
         self._calc_ecdf()
@@ -245,8 +243,9 @@ class ab_test_model(_ab_test_plotting,
             lift_plot_flag -- boolean for plotting lift PDF and
             CDF (default: {True})
         """
-        if self.control_sample == []:
-            raise Exception('fit() must be run before plot')
+        if self.posteriors[self.control_bucket_name].get_posterior_sample() \
+                is None:
+            raise UnboundLocalError('fit() must be run before plot')
 
         if lift_plot_flag and len(self.variant_bucket_names) > 3 \
                 and self.compare_variants:
@@ -275,15 +274,17 @@ class ab_test_model(_ab_test_plotting,
             self._plot_posteriors()
 
         # ONE VARIANT
+        # this is separate because the layout of the report is different
         elif len(self.variant_bucket_names) == 1:
             plt.subplot(2, 2, 1)
-            lift = self.lift[0]
             variant_name = self.variant_bucket_names[0]
             self._plot_posteriors()
             plt.subplot(2, 2, 2)
-            self._plot_positive_lift(lift)
+            self._plot_positive_lift(numerator_name=variant_name,
+                                     denominator_name=self.control_bucket_name)
             plt.subplot(2, 1, 2)
-            self._plot_ecdf(variant_name)
+            self._plot_ecdf(numerator_name=variant_name,
+                            denominator_name=self.control_bucket_name)
 
         # MULTIPLE VARIANTS
         else:
@@ -295,23 +296,26 @@ class ab_test_model(_ab_test_plotting,
             plt.subplot(nrows, 1, 1)
             self._plot_posteriors()
             loc = 3
-            for num in range(0, len(self.variant_bucket_names)):
-                plt.subplot(nrows, 2, loc)
-                self._plot_positive_lift(self.lift[num],
-                                         sample1=-1,
-                                         sample2=num)
-                plt.subplot(nrows, 2, loc+1)
-                self._plot_ecdf(self.variant_bucket_names[num])
-                loc += 2
-            if self.compare_variants:
-                for num in range(0, len(combs)):
+            for numerator, val in self.lift.items():
+                for denominator in val.keys():
+                    if denominator != self.control_bucket_name:
+                        continue
                     plt.subplot(nrows, 2, loc)
-                    self._plot_positive_lift(self.lift[num +
-                                             len(self.variant_bucket_names)],
-                                             sample1=combs[num][1],
-                                             sample2=str(combs[num][0]))
+                    self._plot_positive_lift(numerator_name=numerator,
+                                             denominator_name=denominator)
                     plt.subplot(nrows, 2, loc+1)
-                    name = 'bucket_comparison' + str(combs[num][1]) + \
-                           '_' + str(combs[num][0])
-                    self._plot_ecdf(name)
+                    self._plot_ecdf(numerator_name=numerator,
+                                    denominator_name=denominator)
                     loc += 2
+            if self.compare_variants:
+                for numerator, val in self.lift.items():
+                    for denominator in val.keys():
+                        if denominator == self.control_bucket_name:
+                            continue
+                        plt.subplot(nrows, 2, loc)
+                        self._plot_positive_lift(numerator_name=numerator,
+                                                 denominator_name=denominator)
+                        plt.subplot(nrows, 2, loc+1)
+                        self._plot_ecdf(numerator_name=numerator,
+                                        denominator_name=denominator)
+                        loc += 2

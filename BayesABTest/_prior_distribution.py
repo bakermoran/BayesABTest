@@ -27,10 +27,6 @@ class _prior_distribution_params:
         self.mean = None
         self.var = None
 
-        self.raw_data_agg = None
-        self.control_data = None
-        self.samples = None
-
         if self.ab_test.prior_func == 'beta' and \
                 self.ab_test.prior_info == 'specified':
             req_params = ['alpha', 'beta']
@@ -94,7 +90,10 @@ class _prior_distribution_params:
                                         self.ab_test
                                         .bucket_col_name).count()[
                                             self.ab_test.metric]
-            self.raw_data_agg = raw_data_agg
+            for index, row in raw_data_agg.iterrows():
+                self.ab_test.posteriors[index].set_metric_agg(row[
+                                                        self.ab_test.metric])
+                self.ab_test.posteriors[index].set_bucketed(row['bucketed'])
         elif self.ab_test.prior_func == 'poisson':
             raw_data_agg = self.ab_test.raw_data.groupby(
                            self.ab_test.bucket_col_name).mean()
@@ -104,20 +103,18 @@ class _prior_distribution_params:
             raw_data_agg['bucketed'] = self.ab_test.raw_data.groupby(
                                          self.ab_test.bucket_col_name).count()[
                                              self.ab_test.metric]
-            self.raw_data_agg = raw_data_agg
+            for index, row in raw_data_agg.iterrows():
+                self.ab_test.posteriors[index].set_metric_agg(row[
+                                                        self.ab_test.metric])
+                self.ab_test.posteriors[index].set_variance(row['variance'])
+                self.ab_test.posteriors[index].set_bucketed(row['bucketed'])
         elif self.ab_test.prior_func in ['log-normal', 'normal']:
-            self.control_data = self.ab_test.raw_data \
+            for key, val in self.ab_test.posteriors.items():
+                data = self.ab_test.raw_data \
                                 .loc[self.ab_test.raw_data[
                                         self.ab_test.bucket_col_name] ==
-                                     self.ab_test.control_bucket_name][
-                                        self.ab_test.metric].values
-            self.samples = [list(self.control_data)]
-            for variant in self.ab_test.variant_bucket_names:
-                self.samples.append(list(self.ab_test.raw_data
-                                    .loc[self.ab_test.raw_data[
-                                         self.ab_test.bucket_col_name] ==
-                                         variant][self.ab_test.metric]
-                                         .values))
+                                     key][self.ab_test.metric].values
+                val.set_likelihood_sample(list(data))
 
         # user specified
         if self.ab_test.prior_info == 'specified':
@@ -147,25 +144,30 @@ class _prior_distribution_params:
                 self.alpha = 1
                 self.beta = 1
             elif self.ab_test.prior_info == 'poisson':
-                raise Exception('poisson uninformed prior not yet implemented')
+                raise NotImplementedError('poisson uninformed prior '
+                                          'not yet implemented')
             else:
-                raise Exception('normal uninformed prior not yet implemented')
+                raise NotImplementedError('normal uninformed prior '
+                                          'not yet implemented')
             return
 
         # empirical bayes
         if self.ab_test.prior_func == 'beta':
-            prior_converts = self.raw_data_agg.loc[
-                                            self.ab_test.control_bucket_name][
-                                                self.ab_test.metric]
-            prior_non_converts = self.raw_data_agg.loc[
-                                            self.ab_test.control_bucket_name][
-                                                'bucketed'] - prior_converts
-            self.alpha = prior_converts/self.ab_test.prior_scale_factor,
-            self.beta = prior_non_converts/self.ab_test.prior_scale_factor,
+            prior_converts = self.ab_test.posteriors[
+                              self.ab_test.
+                              control_bucket_name].get_metric_agg()
+            prior_non_converts = prior_converts - self.ab_test.posteriors[
+                                  self.ab_test.
+                                  control_bucket_name].get_bucketed()
+            self.alpha = prior_converts/self.ab_test.prior_scale_factor
+            self.beta = prior_non_converts/self.ab_test.prior_scale_factor
 
         elif self.ab_test.prior_func == 'poisson':
-            mu = np.mean(self.raw_data_agg[self.ab_test.metric].values)
-            sigma2 = np.mean(self.raw_data_agg['variance'].values)
+            mu = np.mean(self.ab_test.posteriors[
+                              self.ab_test.
+                              control_bucket_name].get_metric_agg())
+            sigma2 = np.mean(self.ab_test.posteriors[
+                              self.ab_test.control_bucket_name].get_variance())
             sigma2 *= self.ab_test.prior_scale_factor
             alpha = mu**2/sigma2
             beta = mu/sigma2
@@ -174,12 +176,20 @@ class _prior_distribution_params:
 
         elif self.ab_test.prior_func in ['log-normal', 'normal']:
             if self.ab_test.prior_func == 'log-normal':
-                prior_mean = np.mean(np.log(self.control_data))
-                prior_var = np.var(np.log(self.control_data))
+                prior_mean = np.mean(np.log(self.ab_test.posteriors[
+                              self.ab_test.control_bucket_name]
+                              .get_likelihood_sample()))
+                prior_var = np.var(np.log(self.ab_test.posteriors[
+                              self.ab_test.control_bucket_name]
+                              .get_likelihood_sample()))
                 prior_var *= self.ab_test.prior_scale_factor
             elif self.ab_test.prior_func == 'normal':
-                prior_mean = np.mean(self.control_data)
-                prior_var = np.var(self.control_data)
+                prior_mean = np.mean(self.ab_test.posteriors[
+                              self.ab_test.control_bucket_name]
+                              .get_likelihood_sample())
+                prior_var = np.var(self.ab_test.posteriors[
+                              self.ab_test.control_bucket_name]
+                              .get_likelihood_sample())
                 prior_var *= self.ab_test.prior_scale_factor
             self.mean = prior_mean
             self.var = prior_var

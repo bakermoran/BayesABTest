@@ -4,7 +4,7 @@ from setuptools import setup
 
 setup(
     name='BayesABTest',
-    version='1.0.2',
+    version='1.0.3',
     author="Baker Moran",
     author_email="bamoran99@gmail.com",
     description="A package for running AB tests in a Bayesian framework.",

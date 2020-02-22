@@ -42,16 +42,23 @@ class _ab_test_distributions:
 
     def _set_beta_posteriors(self, prior_distribution):
         """Set the pymc3 model to use Binomial posterior sampling."""
+        size = []
+        obs = []
+        for posterior in self.posteriors.values():
+            size.append(posterior.get_bucketed())
+            obs.append(posterior.get_metric_agg())
         pm.Binomial('posterior',
-                    n=self.prior_params.raw_data_agg['bucketed'].values,
+                    n=size,
                     p=prior_distribution,
-                    observed=self.prior_params.raw_data_agg[
-                                                           self.metric].values)
+                    observed=obs)
 
     def _set_poisson_posteriors(self, prior_distribution):
         """Set the pymc3 model to use Poisson posterior sampling."""
+        obs = []
+        for posterior in self.posteriors.values():
+            obs.append(posterior.get_metric_agg())
         pm.Poisson(name='posterior', mu=prior_distribution,
-                   observed=self.prior_params.raw_data_agg[self.metric].values)
+                   observed=obs)
 
     def _norm_update_var(self, prior_var, sample):
         """Update var to the post var for a (log) normal distribution."""
@@ -77,33 +84,26 @@ class _ab_test_distributions:
 
     def _set_normal_posteriors(self, prior_distribution):
         """Set the pymc3 model to use (log) normal posterior sampling."""
-        posterior_variances = []
-        posterior_means = []
-        names = []
-
-        for index, sample in enumerate(self.prior_params.samples):
+        for key, val in self.posteriors.items():
             posterior_var = self._norm_update_var(self.prior_params.var,
-                                                  sample)
-            posterior_mean = self._norm_update_mean(posterior_var,
-                                                    self.prior_params.var,
-                                                    self.prior_params.mean,
-                                                    sample)
-            posterior_variances.append(posterior_var)
-            posterior_means.append(posterior_mean)
-            names.append(self.metric + str(index))
-
-        for var, mean, name in zip(posterior_variances,
-                                   posterior_means,
-                                   names):
+                                                  val.get_likelihood_sample())
+            posterior_mean = self._norm_update_mean(
+                                                 posterior_var,
+                                                 self.prior_params.var,
+                                                 self.prior_params.mean,
+                                                 val.get_likelihood_sample())
+            val.set_posterior_mean(posterior_mean)
+            val.set_posterior_var(posterior_var)
+            val.set_posterior_sample_name(self.metric + '_' + key)
             if self.prior_func == 'log-normal':
-                pm.Lognormal(name=name,
-                             mu=mean,
-                             sigma=np.sqrt(var),
+                pm.Lognormal(name=val.get_posterior_sample_name(),
+                             mu=val.get_posterior_mean(),
+                             sd=np.sqrt(val.get_posterior_var()),
                              shape=1)
             elif self.prior_func == 'normal':
-                pm.Normal(name=name,
-                          mu=mean,
-                          sigma=np.sqrt(var),
+                pm.Normal(name=val.get_posterior_sample_name(),
+                          mu=val.get_posterior_mean(),
+                          sd=np.sqrt(val.get_posterior_var()),
                           shape=1)
 
     def _set_distributions(self):
@@ -126,14 +126,11 @@ class _ab_test_distributions:
     def _set_samples(self):
         """Set private member variables to the correct sample."""
         if self.prior_func == 'beta' or self.prior_func == 'poisson':
-            self.control_sample = self._trace[self.metric][:, 0]
-            for i in range(1, 1 + len(self.variant_bucket_names)):
-                self.variant_samples.append(list(
-                                            self._trace[self.metric][:, i]))
+            for key, val in self.posteriors.items():
+                index = list(self.posteriors.keys()).index(key)
+                val.set_posterior_sample(
+                                      list(self._trace[self.metric][:, index]))
         elif self.prior_func == 'log-normal' or self.prior_func == 'normal':
-            for index in range(0, len(self.variant_bucket_names) + 1):
-                name = self.metric + str(index)
-                if index == 0:
-                    self.control_sample = self._trace[name][:, 0]
-                else:
-                    self.variant_samples.append(list(self._trace[name][:, 0]))
+            for key, val in self.posteriors.items():
+                val.set_posterior_sample(list(self._trace[
+                                       val.get_posterior_sample_name()][:, 0]))

@@ -15,13 +15,12 @@ def one_variant_conversion():
     auto_bind.fit()
     auto_bind.plot()
     plt.show()
-    auto_bind.loss_function()
 
 
 def one_variant_continuous():
     """Create data and run a one variant report for a continuous metric."""
     # test between off and on buckets (small difference)
-    rawdata_small = dh.create_continuous_data([600, 610], [1.5, 1.5],
+    rawdata_small = dh.create_continuous_data([600, 630], [1.5, 1.5],
                                               ['off', 'on'],
                                               metric_name='total_premium')
     premium_small = ab(rawdata_small, metric='total_premium',
@@ -53,10 +52,8 @@ def one_variant_continuous_small_mean():
                                               ['off', 'on'],
                                               metric_name='loss_ratio')
     premium_small = ab(rawdata_small, metric='loss_ratio',
-                       prior_info='informed',
-                       prior_func='log-normal',
-                       debug=True,
-                       samples=1000)
+                       prior_info='informed', prior_func='log-normal',
+                       debug=True, samples=1000)
     premium_small.fit()
     premium_small.plot()
     plt.show()
@@ -64,15 +61,13 @@ def one_variant_continuous_small_mean():
 
 def two_variants_conversion():
     """Create data and run a two variant report for a conversion metric."""
-    raw_data_2vars = dh.create_conversion_data([.22, .23, .235],
-                                               ['control',
-                                                'variant_1',
-                                                'variant_2'],
+    raw_data_2vars = dh.create_conversion_data([.2, .3, .4],
+                                               ['control', 'rebrand',
+                                                'oldbrand'],
                                                metric_name='bind')
     auto_bind = ab(raw_data_2vars, metric='bind',
                    prior_info='uninformed', prior_func='beta',
                    debug=True, control_bucket_name='control',
-                   variant_bucket_names=['variant_1', 'variant_2'],
                    compare_variants=True, samples=1000)
     auto_bind.fit()
     auto_bind.plot(lift_plot_flag=True)
@@ -92,7 +87,6 @@ def conversion_negative_variants():
     auto_bind = ab(raw_data_2vars, metric='bind',
                    prior_info='uninformed', prior_func='beta',
                    debug=True, control_bucket_name='control',
-                   variant_bucket_names=['variant_1', 'variant_2'],
                    compare_variants=True, samples=1000)
     auto_bind.fit()
     auto_bind.plot(lift_plot_flag=True)
@@ -102,16 +96,12 @@ def conversion_negative_variants():
 def two_variants_continuous():
     """Create data and run a two variant report for a continuous metric."""
     rawdata = dh.create_continuous_data([600, 610, 615], [1.5, 1.5, 1.5],
-                                        ['control',
-                                         'variant_1',
-                                         'variant_2'],
+                                        ['control', 'variant_1', 'variant_2'],
                                         metric_name='total_premium')
 
     premium = ab(rawdata, metric='total_premium', prior_info='informed',
                  prior_func='log-normal', debug=True,
-                 control_bucket_name='control',
-                 variant_bucket_names=['variant_1', 'variant_2'],
-                 compare_variants=True,
+                 control_bucket_name='control', compare_variants=True,
                  samples=1000)
     premium.fit()
     premium.plot()
@@ -122,17 +112,13 @@ def three_variants_continuous():
     """Create data and run a three variant report for a continuous metric."""
     rawdata = dh.create_continuous_data([600, 610, 615, 620],
                                         [1.5, 1.5, 1.5, 1.5],
-                                        ['control',
-                                         'variant_1',
-                                         'variant_2',
+                                        ['control', 'variant_1', 'variant_2',
                                          'variant_3'],
                                         metric_name='total_premium')
     premium = ab(rawdata, metric='total_premium',
                  prior_info='informed', prior_func='log-normal',
                  debug=True, control_bucket_name='control',
-                 variant_bucket_names=['variant_1', 'variant_2', 'variant_3'],
-                 compare_variants=True,
-                 samples=1000)
+                 compare_variants=True, samples=1000)
     premium.fit()
     premium.plot()
     plt.show()
@@ -141,18 +127,15 @@ def three_variants_continuous():
 def four_variants_continuous():
     """Create data and run a four variant report for a continuous metric."""
     rawdata = dh.create_continuous_data([600, 610, 615, 620, 625],
-                                        [1.5, 1.5, 1.5, 1.5, 1.5],
-                                        ['control',
-                                         'variant_1',
-                                         'variant_2',
-                                         'variant_3',
+                                        [1.0, 1.0, 1.0, 1.0, 1.0],
+                                        ['control', 'variant_1',
+                                         'variant_2', 'variant_3',
                                          'variant_4'],
-                                        metric_name='total_premium')
+                                        metric_name='total_premium',
+                                        sample_length=1000)
     premium = ab(rawdata, metric='total_premium',
                  prior_info='informed', prior_func='log-normal',
                  debug=True, control_bucket_name='control',
-                 variant_bucket_names=['variant_1', 'variant_2',
-                                       'variant_3', 'variant_4'],
                  compare_variants=False, samples=1000)
     premium.fit()
     premium.plot(lift_plot_flag=True)
@@ -171,7 +154,6 @@ def two_variants_continuous_normal():
     premium = ab(rawdata, metric='total_premium',
                  prior_info='informed', prior_func='normal',
                  debug=True, control_bucket_name='control',
-                 variant_bucket_names=['variant_1', 'variant_2'],
                  compare_variants=True, samples=1000)
     premium.fit()
     premium.plot(lift_plot_flag=True)
@@ -180,14 +162,14 @@ def two_variants_continuous_normal():
 
 def two_variants_poisson():
     """Create data and run a four variant report for a poisson metric."""
-    rawdata = dh.create_poisson_data([15, 17, 20],
-                                     ['control', 'variant_1', 'variant_2'],
+    rawdata = dh.create_poisson_data([10, 20, 25],
+                                     ['control', 'rebrand', 'oldbrand'],
                                      metric_name='visits', sample_length=3000)
 
+    rawdata = rawdata.sample(frac=1).reset_index(drop=True)
     visits = ab(rawdata, metric='visits',
                 prior_info='informed', prior_func='poisson',
                 debug=True, control_bucket_name='control',
-                variant_bucket_names=['variant_1', 'variant_2'],
                 compare_variants=True, samples=3000)
     visits.fit()
     visits.plot(lift_plot_flag=True)
@@ -207,7 +189,6 @@ def single_plot_posteriors_unit_test():
     visits = ab(rawdata, metric='visits',
                 prior_info='informed', prior_func='poisson',
                 debug=True, control_bucket_name='control',
-                variant_bucket_names=['variant_1', 'variant_2'],
                 compare_variants=True, samples=3000)
     visits.fit()
     visits.plot_posteriors()
@@ -241,7 +222,6 @@ def single_plot_lift_unit_test():
     visits = ab(rawdata, metric='visits',
                 prior_info='informed', prior_func='poisson',
                 debug=True, control_bucket_name='control',
-                variant_bucket_names=['variant_1', 'variant_2'],
                 compare_variants=True, samples=3000)
     visits.fit()
     visits.plot_positive_lift('control', 'variant_1')
@@ -272,7 +252,6 @@ def single_plot_ecdf_unit_test():
     visits = ab(rawdata, metric='visits',
                 prior_info='informed', prior_func='poisson',
                 debug=True, control_bucket_name='control',
-                variant_bucket_names=['variant_1', 'variant_2'],
                 compare_variants=True, samples=3000)
     visits.fit()
     visits.plot_ecdf('control', 'variant_1')
@@ -301,7 +280,6 @@ def test_specified_prior():
     auto_bind = ab(raw_data_2vars, metric='bind',
                    prior_info='specified', prior_func='beta',
                    debug=True, control_bucket_name='control',
-                   variant_bucket_names=['variant_1', 'variant_2'],
                    compare_variants=True, prior_parameters=prior,
                    samples=1000)
     auto_bind.fit()
@@ -316,14 +294,13 @@ def test_specified_prior():
     premium = ab(rawdata, metric='total_premium',
                  prior_info='specified', prior_func='log-normal',
                  debug=True, control_bucket_name='control',
-                 variant_bucket_names=['variant_1', 'variant_2'],
                  compare_variants=True, prior_parameters=prior,
                  samples=1000)
     premium.fit()
     premium.plot()
     plt.show()
 
-    prior = {'mean': 650, 'var': 30}
+    prior = {'mean': 650, 'var': 30000}
     rawdata = dh.create_continuous_data([600, 601, 602],
                                         [30, 30, 30],
                                         ['control', 'variant_1', 'variant_2'],
@@ -331,7 +308,6 @@ def test_specified_prior():
     premium = ab(rawdata, metric='total_premium',
                  prior_info='specified', prior_func='normal',
                  debug=True, control_bucket_name='control',
-                 variant_bucket_names=['variant_1', 'variant_2'],
                  compare_variants=True, prior_parameters=prior,
                  samples=1000)
     premium.fit()
@@ -346,7 +322,6 @@ def test_specified_prior():
     visits = ab(rawdata, metric='visits',
                 prior_info='specified', prior_func='poisson',
                 debug=True, control_bucket_name='control',
-                variant_bucket_names=['variant_1', 'variant_2'],
                 compare_variants=True, prior_parameters=prior,
                 samples=3000)
     visits.fit()
@@ -361,7 +336,6 @@ def test_specified_prior():
     visits = ab(rawdata, metric='visits',
                 prior_info='specified', prior_func='poisson',
                 debug=True, control_bucket_name='control',
-                variant_bucket_names=['variant_1', 'variant_2'],
                 compare_variants=True, prior_parameters=prior,
                 samples=3000)
     visits.fit()
