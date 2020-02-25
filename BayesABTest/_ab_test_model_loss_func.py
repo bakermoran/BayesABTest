@@ -9,9 +9,9 @@ class _ab_test_loss_functions:
     """Provides loss functions to the greated at_test_model class.
 
     Raises:
-        Exception: only beta prior is supported
-        Exception: only 1 variant is supported
-        Exception: loss type must be absolute or percent
+        ValueError: only beta prior is supported
+        ValueError: loss type must be absolute or percent
+        RuntimeError: only 1 variant is supported
     """
 
     def _h(self, a, b, c, d):
@@ -124,11 +124,11 @@ class _ab_test_loss_functions:
         Currently only conversion 1-variant is supported.
         """
         if loss_type not in ['absolute', 'percent']:
-            raise Exception('loss_type must be either absolute or percent')
+            raise ValueError('loss_type must be either absolute or percent')
         if self.prior_func != 'beta':
-            raise Exception('prior_func must be beta')
+            raise ValueError('prior_func must be beta')
         if len(self.variant_bucket_names) != 1:
-            raise Exception('only one variant is supported')
+            raise RuntimeError('only one variant is supported')
 
         raw_data_agg = self.raw_data.groupby(self.bucket_col_name).sum()
         raw_data_agg['bucketed'] = self.raw_data.groupby(
