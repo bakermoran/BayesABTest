@@ -108,6 +108,35 @@ def two_variants_continuous():
     plt.show()
 
 
+def gamma_uninformed():
+    """Create data and run a two variant report for a continuous metric."""
+    rawdata_ln = dh.create_continuous_data([600, 610, 615], [1.5, 1.5, 1.5],
+                                           ['control', 'variant_1',
+                                            'variant_2'],
+                                           metric_name='total_premium')
+
+    premium = ab(rawdata_ln, metric='total_premium', prior_info='uninformed',
+                 prior_func='log-normal', debug=True,
+                 control_bucket_name='control', compare_variants=True,
+                 samples=1000)
+    premium.fit()
+    premium.plot()
+    plt.show()
+
+    rawdata_n = dh.create_continuous_data([600, 601, 602], [30, 30, 30],
+                                          ['control', 'variant_1',
+                                           'variant_2'],
+                                          metric_name='total_premium',
+                                          log=False)
+    premium = ab(rawdata_n, metric='total_premium',
+                 prior_info='uninformed', prior_func='normal',
+                 debug=True, control_bucket_name='control',
+                 compare_variants=True, samples=1000)
+    premium.fit()
+    premium.plot(lift_plot_flag=True)
+    plt.show()
+
+
 def three_variants_continuous():
     """Create data and run a three variant report for a continuous metric."""
     rawdata = dh.create_continuous_data([600, 610, 615, 620],
