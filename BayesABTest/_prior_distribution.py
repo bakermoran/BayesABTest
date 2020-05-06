@@ -143,12 +143,17 @@ class _prior_distribution_params:
             if self.ab_test.prior_func == 'beta':
                 self.alpha = 1
                 self.beta = 1
-            elif self.ab_test.prior_info == 'poisson':
+            elif self.ab_test.prior_func == 'poisson':
                 raise NotImplementedError('poisson uninformed prior '
                                           'not yet implemented')
+            elif self.ab_test.prior_func == 'log-normal':
+                self.mean = np.log(1)
+                self.var = np.log(20000)
+            elif self.ab_test.prior_func == 'normal':
+                self.mean = 1
+                self.var = 20000
             else:
-                raise NotImplementedError('normal uninformed prior '
-                                          'not yet implemented')
+                raise RuntimeError('Reached unexpected code')
             return
 
         # empirical bayes
