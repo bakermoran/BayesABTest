@@ -173,48 +173,48 @@ class ab_test_model(_ab_test_plotting,
         SUPPORTED_PRIOR_INFO = ['informed', 'uninformed', 'specified']
 
         if raw_data.empty:
-            raise Exception('Input dataframe must contain data')
+            raise ValueError('Input dataframe must contain data')
         if prior_func == 'beta' \
                 and ([np.any(x) for x in raw_data[metric].unique()
                      if x not in list([0, 1])] or [False])[0]:
-            raise Exception('Observed data for beta prior should be binary')
+            raise ValueError('Observed data for beta prior should be binary')
         if metric not in raw_data.columns:
-            raise Exception('Input dataframe must contain column:', metric)
+            raise ValueError('Input dataframe must contain column:', metric)
         if samples < 1000 or samples > 50000:
-            raise Exception(('Number of samples must be in the '
-                            'interval [1000,50000]'))
+            raise ValueError(('Number of samples must be in the '
+                              'interval [1000,50000]'))
         if prior_func not in SUPPORTED_PRIOR_FUNC:
-            raise Exception('Prior must be' +
-                            'in [{}]'.format(', '.join(SUPPORTED_PRIOR_FUNC)))
+            raise ValueError('Prior must be' +
+                             'in [{}]'.format(', '.join(SUPPORTED_PRIOR_FUNC)))
         if prior_info not in SUPPORTED_PRIOR_INFO:
-            raise Exception('Prior must be in' +
-                            '[{}]'.format(', '.join(SUPPORTED_PRIOR_INFO)))
+            raise ValueError('Prior must be in' +
+                             '[{}]'.format(', '.join(SUPPORTED_PRIOR_INFO)))
         if prior_info == 'specified' and prior_parameters is None:
-            raise Exception(('If prior_info == specifed, '
-                            'prior_parameters must not be None'))
+            raise ValueError(('If prior_info == specifed, '
+                             'prior_parameters must not be None'))
         if prior_info != 'specified' and prior_parameters is not None:
             print(('WARNING: prior_info was specified as {}. prior_parameters '
                   'are being ignored'.format(prior_parameters)))
         if control_bucket_name not in raw_data[bucket_col_name].unique():
-            raise Exception('Input dataframe', bucket_col_name,
-                            'column must contain values with:',
-                            control_bucket_name,
-                            'as the control bucket name')
+            raise ValueError('Input dataframe', bucket_col_name,
+                             'column must contain values with:',
+                             control_bucket_name,
+                             'as the control bucket name')
         if compare_variants and len(buckets) - 1 < 2:
-            raise Exception(('If compare_variants is True, there must be '
-                            'at least 2 variants'))
+            raise ValueError(('If compare_variants is True, there must be '
+                             'at least 2 variants'))
         if len(buckets) - 1 > 10:
-            raise Exception(('Greater than 10 variants is not currently '
-                            'supported'))
+            raise RuntimeError(('Greater than 10 variants is not currently '
+                               'supported'))
         if bucket_col_name not in raw_data.columns:
-            raise Exception('Input dataframe must contain column:',
-                            bucket_col_name)
+            raise ValueError('Input dataframe must contain column:',
+                             bucket_col_name)
         if confidence_level <= 0 or confidence_level >= 1:
-            raise Exception('Confidence level must be in the interval (0,1)')
+            raise ValueError('Confidence level must be in the interval (0,1)')
         if debug not in [True, False]:
-            raise Exception('debug must be either True or False')
+            raise ValueError('debug must be either True or False')
         if compare_variants not in [True, False]:
-            raise Exception('compare_variants must be either True or False')
+            raise ValueError('compare_variants must be either True or False')
 
     def fit(self):
         """Set up the pymc3 model with the prior parameters."""

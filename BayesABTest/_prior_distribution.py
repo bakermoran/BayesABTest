@@ -17,7 +17,7 @@ class _prior_distribution_params:
         """
         if ab_test.prior_info == 'specified' and \
                 type(ab_test.prior_parameters) != dict:
-            raise Exception('prior_params must be dict type')
+            raise TypeError('prior_params must be dict type')
 
         self.ab_test = ab_test
 
@@ -32,12 +32,12 @@ class _prior_distribution_params:
             req_params = ['alpha', 'beta']
             if any(x not in self.ab_test.prior_parameters.keys()
                    for x in req_params):
-                raise Exception("""Beta prior parameters must
-                                include alpha and beta.""")
+                raise ValueError('Beta prior parameters must '
+                                 'include alpha and beta.')
             if any(x not in req_params for x in
                    self.ab_test.prior_parameters.keys()):
-                print("""WARNING: Beta prior ignoring parameters not
-                      alpha or beta.""")
+                print('WARNING: Beta prior ignoring parameters not '
+                      'alpha or beta.')
         elif self.ab_test.prior_func == 'poisson' \
                 and self.ab_test.prior_info == 'specified':
             req_params = ['alpha', 'beta', 'mean', 'var']
@@ -45,16 +45,16 @@ class _prior_distribution_params:
                 'var' not in self.ab_test.prior_parameters.keys()) or \
                     ('var' in self.ab_test.prior_parameters.keys() and
                      'mean' not in self.ab_test.prior_parameters.keys()):
-                raise Exception("""{} prior parameters must be either mean
-                                and var, OR alpha and beta."""
-                                .format(self.ab_test.prior_func))
+                raise ValueError('{} prior parameters must be either mean '
+                                 'and var, OR alpha and beta.'
+                                 .format(self.ab_test.prior_func))
             if ('alpha' in self.ab_test.prior_parameters.keys() and
                 'beta' not in self.ab_test.prior_parameters.keys()) or \
                     ('beta' in self.ab_test.prior_parameters.keys() and
                      'alpha' not in self.ab_test.prior_parameters.keys()):
-                raise Exception("""{} prior parameters must be either
-                                mean and var, OR alpha and beta."""
-                                .format(self.ab_test.prior_func))
+                raise ValueError('{} prior parameters must be either'
+                                 'mean and var, OR alpha and beta.'
+                                 .format(self.ab_test.prior_func))
             if any(x not in req_params for x in
                    self.ab_test.prior_parameters.keys()):
                 print('WARNING: {} prior ignoring extra parameters.'
@@ -71,7 +71,7 @@ class _prior_distribution_params:
             req_params = ['mean', 'var']
             if any(x not in self.ab_test.prior_parameters.keys()
                    for x in req_params):
-                raise Exception("""{} prior parameters must include mean
+                raise ValueError("""{} prior parameters must include mean
                                 and var.""".format(self.ab_test.prior_func))
             if any(x not in req_params
                    for x in self.ab_test.prior_parameters.keys()):
