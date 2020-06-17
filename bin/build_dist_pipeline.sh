@@ -1,4 +1,8 @@
 #!/bin/bash
 
+echo 'MAKE SURE setup.py FILE IS UPDATED WITH NEWEST VERSION AND A RELEASE IS CREATED ON GITHUB'
+
+sleep 5
+
 python3 setup.py sdist bdist_wheel
-# python3 -m twine upload --repository-url https://test.pypi.org/legacy/ dist/*
+twine upload dist/*
