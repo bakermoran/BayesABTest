@@ -117,8 +117,8 @@ class ab_test_model(_ab_test_plotting,
         self.control_bucket_name = control_bucket_name
         self.variant_bucket_names = []
 
-        colors = ['red', 'green', 'yellow', 'purple', 'cyan']
-        colors += colors
+        colors = ['r', 'g', 'y', 'm', 'c', 'darkred', 'darkorange',
+                  'indigo', 'slategrey', 'coral']
         color_index = 0
         for bucket in buckets:
             if bucket == control_bucket_name:
