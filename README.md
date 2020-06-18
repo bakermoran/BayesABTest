@@ -1,4 +1,4 @@
-![Build Status](https://github.com/actions/BayesABTest/workflows/.github/workflows/build-tests.yml/badge.svg)
+![Build Status](https://github.com/bakermoran/BayesABTest/workflows/Python%20package/badge.svg?branch=master)
 
 # Bayesian AB Test Report Builder
 
