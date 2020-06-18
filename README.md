@@ -1,6 +1,6 @@
-# Bayesian AB Test Report Builder
+![Build Status](https://github.com/actions/BayesABTest/workflows/.github/workflows/build-tests.yml/badge.svg)
 
-[![Actions Status](https://github.com/bakermoran/BayesABTest/workflows/build-tests/badge.svg)](https://github.com/bakermoiran/BayesABTest/actions)
+# Bayesian AB Test Report Builder
 
 > **Baker Moran**
 
