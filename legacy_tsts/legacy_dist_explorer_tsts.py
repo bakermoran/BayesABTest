@@ -4,7 +4,7 @@ from BayesABTest import ab_test_dist_explorer as pe
 from matplotlib import pyplot as plt
 
 
-def test_beta():
+def tst_beta():
     """Test the beta plotter with various params."""
     pe.beta_dist(1, 1)
     plt.show()
@@ -37,7 +37,7 @@ def test_beta():
         print('Value error successfully caught')
 
 
-def test_gamma():
+def tst_gamma():
     """Test the gamma plotter with various params."""
     pe.gamma_dist(alpha=8, beta=2)
     plt.show()
@@ -58,7 +58,7 @@ def test_gamma():
         print('Value error successfully caught')
 
 
-def test_poisson():
+def tst_poisson():
     """Test the poisson plotter with various params."""
     pe.poisson_dist(15)
     plt.show()
@@ -82,7 +82,7 @@ def test_poisson():
         print('Value error successfully caught')
 
 
-def test_lognormal():
+def tst_lognormal():
     """Test the lognormal plotter with various params."""
     pe.lognormal_dist(650, 1.2)
     plt.show()
