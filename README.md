@@ -1,5 +1,7 @@
 # Bayesian AB Test Report Builder
 
+[![Actions Status](https://github.com/bakermoran/BayesABTest/workflows/build-tests/badge.svg)](https://github.com/bakermoiran/BayesABTest/actions)
+
 > **Baker Moran**
 
 This is a package to allow AB testers to create a standard report for test results. Can handle conversion and continuous data. Can handle multiple variants.
