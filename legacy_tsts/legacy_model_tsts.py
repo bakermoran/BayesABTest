@@ -205,7 +205,7 @@ def two_variants_poisson():
     plt.show()
 
 
-def single_plot_posteriors_unit_test():
+def single_plot_posteriors_unit_tsts():
     """Test plot_posteriors.
 
     Use a poisson metric to test the public version of plot_posteriors,
@@ -238,7 +238,7 @@ def single_plot_posteriors_unit_test():
     plt.show()
 
 
-def single_plot_lift_unit_test():
+def single_plot_lift_unit_tst():
     """Test plot_positive_lift.
 
     Use a poisson metric to test the public version of plot_positive_lift,
@@ -268,7 +268,7 @@ def single_plot_lift_unit_test():
     plt.show()
 
 
-def single_plot_ecdf_unit_test():
+def single_plot_ecdf_unit_tst():
     """Test plot_ecdf.
 
     Use a poisson metric to test the public version of plot_ecdf,
@@ -298,7 +298,7 @@ def single_plot_ecdf_unit_test():
     plt.show()
 
 
-def test_specified_prior():
+def tst_specified_prior():
     """Test a user specified prior for several different types."""
     raw_data_2vars = dh.create_conversion_data([.22, .23, .235],
                                                ['control',
