@@ -7,13 +7,13 @@ from matplotlib import pyplot as plt
 
 def one_variant_conversion():
     """Create data and run a one variant report for a conversion metric."""
-    raw_data_auto_bind = dh.create_conversion_data([.27, .3], ['off', 'on'],
-                                                   metric_name='bind')
-    auto_bind = ab(raw_data_auto_bind, metric='bind',
-                   prior_info='uninformed', prior_func='beta', debug=True,
-                   samples=1000)
-    auto_bind.fit()
-    auto_bind.plot()
+    raw_data_conversion = dh.create_conversion_data([.27, .3], ['off', 'on'],
+                                                    metric_name='conversion')
+    site_conversion = ab(raw_data_conversion, metric='conversion',
+                         prior_info='uninformed', prior_func='beta',
+                         debug=True, samples=1000)
+    site_conversion.fit()
+    site_conversion.plot()
     plt.show()
 
 
@@ -64,13 +64,13 @@ def two_variants_conversion():
     raw_data_2vars = dh.create_conversion_data([.2, .3, .4],
                                                ['control', 'rebrand',
                                                 'oldbrand'],
-                                               metric_name='bind')
-    auto_bind = ab(raw_data_2vars, metric='bind',
-                   prior_info='uninformed', prior_func='beta',
-                   debug=True, control_bucket_name='control',
-                   compare_variants=True, samples=1000)
-    auto_bind.fit()
-    auto_bind.plot(lift_plot_flag=True)
+                                               metric_name='conversion')
+    site_conversion = ab(raw_data_2vars, metric='conversion',
+                         prior_info='uninformed', prior_func='beta',
+                         debug=True, control_bucket_name='control',
+                         compare_variants=True, samples=1000)
+    site_conversion.fit()
+    site_conversion.plot(lift_plot_flag=True)
     plt.show()
 
 
@@ -83,13 +83,13 @@ def conversion_negative_variants():
                                                ['control',
                                                 'variant_1',
                                                 'variant_2'],
-                                               metric_name='bind')
-    auto_bind = ab(raw_data_2vars, metric='bind',
-                   prior_info='uninformed', prior_func='beta',
-                   debug=True, control_bucket_name='control',
-                   compare_variants=True, samples=1000)
-    auto_bind.fit()
-    auto_bind.plot(lift_plot_flag=True)
+                                               metric_name='conversion')
+    site_conversion = ab(raw_data_2vars, metric='conversion',
+                         prior_info='uninformed', prior_func='beta',
+                         debug=True, control_bucket_name='control',
+                         compare_variants=True, samples=1000)
+    site_conversion.fit()
+    site_conversion.plot(lift_plot_flag=True)
     plt.show()
 
 
@@ -304,15 +304,15 @@ def tst_specified_prior():
                                                ['control',
                                                 'variant_1',
                                                 'variant_2'],
-                                               metric_name='bind')
+                                               metric_name='conversion')
     prior = {'alpha': 22, 'beta': 100-22}
-    auto_bind = ab(raw_data_2vars, metric='bind',
-                   prior_info='specified', prior_func='beta',
-                   debug=True, control_bucket_name='control',
-                   compare_variants=True, prior_parameters=prior,
-                   samples=1000)
-    auto_bind.fit()
-    auto_bind.plot(lift_plot_flag=True)
+    site_conversion = ab(raw_data_2vars, metric='conversion',
+                         prior_info='specified', prior_func='beta',
+                         debug=True, control_bucket_name='control',
+                         compare_variants=True, prior_parameters=prior,
+                         samples=1000)
+    site_conversion.fit()
+    site_conversion.plot(lift_plot_flag=True)
     plt.show()
 
     prior = {'mean': 650, 'var': 1.5}
