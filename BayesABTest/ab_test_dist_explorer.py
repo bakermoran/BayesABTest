@@ -35,7 +35,6 @@ def beta_dist(alpha, beta):
     for i in range(len(locs)):
         labels.append('{:.0%}'.format(locs[i]))
     plt.xticks(locs, labels=labels)
-    plt.show()
 
 
 def gamma_dist(mean=None, var=None, alpha=None, beta=None):
@@ -81,7 +80,6 @@ def gamma_dist(mean=None, var=None, alpha=None, beta=None):
     plt.title('Gamma({0}, {1}) Distribution PDF (mean and variance)'
               .format(mean, var),
               fontweight='bold', fontsize=14)
-    plt.show()
 
 
 def lognormal_dist(mean, var):
@@ -109,7 +107,6 @@ def lognormal_dist(mean, var):
     plt.title('Log-Normal({0:.2}, {1:.2}) Distribution PDF (mean and variance)'
               .format(mean, var),
               fontweight='bold', fontsize=14)
-    plt.show()
 
 
 def poisson_dist(lam):
@@ -131,4 +128,3 @@ def poisson_dist(lam):
     plt.yticks([], [])
     plt.title('Poisson({}) Distribution PMF'.format(lam),
               fontweight='bold', fontsize=14)
-    plt.show()
