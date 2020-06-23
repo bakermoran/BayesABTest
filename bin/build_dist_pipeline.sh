@@ -5,4 +5,4 @@ echo 'MAKE SURE setup.py FILE IS UPDATED WITH NEWEST VERSION AND A RELEASE IS CR
 sleep 5
 
 python3 setup.py sdist bdist_wheel
-twine upload dist/*
+twine upload --skip-existing dist/*
