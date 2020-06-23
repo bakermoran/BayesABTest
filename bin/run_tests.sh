@@ -1,4 +1,4 @@
 #!/bin/bash
 
-echo '+ python3 tests/test_controller.py'
-python3 'tests/test_controller.py'
+echo '+ pytest -n 4'
+pytest -n 4
