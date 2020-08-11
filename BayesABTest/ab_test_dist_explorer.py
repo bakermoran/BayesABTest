@@ -18,7 +18,7 @@ def beta_dist(alpha, beta):
     """
     if alpha <= 0 or beta <= 0:
         raise ValueError('alpha and beta must both be greater than 0.')
-
+    scale = alpha / (alpha + beta)
     x = np.linspace(0, 1, 1000)
     dist = stats.beta(alpha, beta)
     y = dist.pdf(x)
@@ -29,7 +29,7 @@ def beta_dist(alpha, beta):
     plt.title('Beta({0}, {1}) Distribution PDF'.format(alpha, beta),
               fontweight='bold', fontsize=14)
     plt.xlabel('Conversion Rate')
-    plt.xlim((0, 1))
+    plt.xlim((scale - scale * .5, scale + scale * .5))
     locs, labels = plt.xticks()
     labels = []
     for i in range(len(locs)):
