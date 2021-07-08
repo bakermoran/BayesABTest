@@ -15,7 +15,7 @@ def test_single_plot_posteriors_unit():
                                      metric_name='visits', sample_length=3000)
 
     visits = ab(rawdata, metric='visits',
-                prior_info='informed', prior_func='poisson',
+                prior_info='informed', prior_function='poisson',
                 debug=True, control_bucket_name='control',
                 compare_variants=True, samples=3000)
     visits.fit()
@@ -41,7 +41,7 @@ def test_single_plot_lift_unit():
                                      metric_name='visits', sample_length=3000)
 
     visits = ab(rawdata, metric='visits',
-                prior_info='informed', prior_func='poisson',
+                prior_info='informed', prior_function='poisson',
                 debug=True, control_bucket_name='control',
                 compare_variants=True, samples=3000)
     visits.fit()
@@ -66,7 +66,7 @@ def test_single_plot_ecdf_unit():
                                      metric_name='visits', sample_length=3000)
 
     visits = ab(rawdata, metric='visits',
-                prior_info='informed', prior_func='poisson',
+                prior_info='informed', prior_function='poisson',
                 debug=True, control_bucket_name='control',
                 compare_variants=True, samples=3000)
     visits.fit()

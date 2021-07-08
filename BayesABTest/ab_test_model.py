@@ -1,11 +1,10 @@
 """Declaration file for ab_test_model class."""
 
 import numpy as np
-import pymc3 as pm
 import matplotlib.pyplot as plt
 from itertools import combinations
 from ._ab_test_model_plotting import _ab_test_plotting
-from ._ab_test_model_distributions import _ab_test_distributions
+from ._ab_test_model_sampling import _ab_test_model_sampling
 from ._ab_test_model_loss_func import _ab_test_loss_functions
 from ._prior_distribution import _prior_distribution_params
 from ._posterior_distribution import posterior_distribution
@@ -17,12 +16,12 @@ from ._posterior_distribution import posterior_distribution
 
 
 class ab_test_model(_ab_test_plotting,
-                    _ab_test_distributions,
+                    _ab_test_model_sampling,
                     _ab_test_loss_functions):
     """Fit an ab_test_model object to your data, and output the results.
 
-    This is a easy to use wrapper around Pymc3, with built in plotting
-    and reporting.
+    This is a easy to use wrapper around scipy and numpy, with built in
+    plotting and reporting.
 
     [methods]
         fit()
@@ -51,7 +50,7 @@ class ab_test_model(_ab_test_plotting,
                 for each sampled value (only meaningful after fit() is run)
     """
 
-    def __init__(self, raw_data, metric, samples=10000, prior_func='beta',
+    def __init__(self, raw_data, metric, prior_function, samples=10000,
                  prior_info='informed', control_bucket_name='off',
                  bucket_col_name='bucket', confidence_level=.05,
                  compare_variants=False, prior_scale_factor=4,
@@ -69,7 +68,8 @@ class ab_test_model(_ab_test_plotting,
         Keyword Arguments:
             samples {int} -- number of samples to run the monte carlo
                 simulation, must be 1,000 and 50,000 (default: {10000})
-            prior_func {str} --the type of distribution to use for the prior.
+            prior_function {str} --the type of distribution to use for
+                the prior.
                 (default: {'beta'}). options are:
                 beta -- use for conversion rates. bounded on the interval [0,1]
                 log--normal -- use for continuous, greater than zero response
@@ -107,7 +107,7 @@ class ab_test_model(_ab_test_plotting,
             purposes (default: {False})
         """
         buckets = raw_data[bucket_col_name].unique()
-        self._error_check_inputs(raw_data, metric, samples, prior_func,
+        self._error_check_inputs(raw_data, metric, samples, prior_function,
                                  prior_info, control_bucket_name, buckets,
                                  bucket_col_name, confidence_level,
                                  compare_variants, prior_scale_factor,
@@ -122,13 +122,14 @@ class ab_test_model(_ab_test_plotting,
         color_index = 0
         for bucket in buckets:
             if bucket == control_bucket_name:
-                self.posteriors[bucket] = posterior_distribution(bucket,
-                                                                 'blue',
-                                                                 prior_func)
+                self.posteriors[bucket] = posterior_distribution(
+                    bucket,
+                    'blue',
+                    prior_function)
             else:
                 self.posteriors[bucket] = posterior_distribution(
                                                 bucket, colors[color_index],
-                                                prior_func)
+                                                prior_function)
                 color_index += 1
         self.variant_bucket_names = list(self.posteriors.keys())
         self.variant_bucket_names.remove(self.control_bucket_name)
@@ -136,7 +137,7 @@ class ab_test_model(_ab_test_plotting,
         # PUBLIC VARIABLES
         self.debug = debug
         self.prior_info = prior_info
-        self.prior_func = prior_func
+        self.prior_function = prior_function
         self.raw_data = raw_data
         self.metric = metric
         self.samples = samples
@@ -157,9 +158,9 @@ class ab_test_model(_ab_test_plotting,
         self.lift = {}
 
         self.prior_params = _prior_distribution_params(self)
-        self._trace = None
+        self._trace = {}
 
-    def _error_check_inputs(self, raw_data, metric, samples, prior_func,
+    def _error_check_inputs(self, raw_data, metric, samples, prior_function,
                             prior_info, control_bucket_name, buckets,
                             bucket_col_name, confidence_level,
                             compare_variants, prior_scale_factor,
@@ -169,12 +170,12 @@ class ab_test_model(_ab_test_plotting,
         This class only supports the inputs in __init__.
         """
         # to do: naming is wrong cuz some are priors some are posts
-        SUPPORTED_PRIOR_FUNC = ['beta', 'log-normal', 'normal', 'poisson']
-        SUPPORTED_PRIOR_INFO = ['informed', 'uninformed', 'specified']
+        SUPPORTED_PRIOR_FUNCTIONS = ['beta', 'log-normal', 'normal', 'poisson']
+        SUPPORTED_PRIOR_INFO_TYPES = ['informed', 'uninformed', 'specified']
 
         if raw_data.empty:
             raise ValueError('Input dataframe must contain data')
-        if prior_func == 'beta' \
+        if prior_function == 'beta' \
                 and ([np.any(x) for x in raw_data[metric].unique()
                      if x not in list([0, 1])] or [False])[0]:
             raise ValueError('Observed data for beta prior should be binary')
@@ -183,12 +184,14 @@ class ab_test_model(_ab_test_plotting,
         if samples < 1000 or samples > 50000:
             raise ValueError(('Number of samples must be in the '
                               'interval [1000,50000]'))
-        if prior_func not in SUPPORTED_PRIOR_FUNC:
+        if prior_function not in SUPPORTED_PRIOR_FUNCTIONS:
             raise ValueError('Prior must be' +
-                             'in [{}]'.format(', '.join(SUPPORTED_PRIOR_FUNC)))
-        if prior_info not in SUPPORTED_PRIOR_INFO:
+                             'in [{}]'.format(
+                                 ', '.join(SUPPORTED_PRIOR_FUNCTIONS)))
+        if prior_info not in SUPPORTED_PRIOR_INFO_TYPES:
             raise ValueError('Prior must be in' +
-                             '[{}]'.format(', '.join(SUPPORTED_PRIOR_INFO)))
+                             '[{}]'.format(
+                                 ', '.join(SUPPORTED_PRIOR_INFO_TYPES)))
         if prior_info == 'specified' and prior_parameters is None:
             raise ValueError(('If prior_info == specifed, '
                              'prior_parameters must not be None'))
@@ -217,21 +220,11 @@ class ab_test_model(_ab_test_plotting,
             raise ValueError('compare_variants must be either True or False')
 
     def fit(self):
-        """Set up the pymc3 model with the prior parameters."""
-        model = pm.Model()
-        with model:
-            self._set_distributions()
+        """Set up the model, run sampling, and calculate lift."""
+        print('Running', self.samples * (1 + len(self.variant_bucket_names)),
+              'MCMC simulations')
 
-        if self.debug:
-            print('Running', self.samples, 'MCMC simulations')
-        with model:
-            self._trace = pm.sample(self.samples)
-            self._set_samples()
-
-        if self.debug:
-            summary = pm.summary(self._trace)
-            print('Posterior sampling distribution summary statistics \n {}'
-                  .format(summary[['mean', 'sd']].round(4)))
+        self._sample()
 
         self._calc_lift()
         self._calc_ecdf()

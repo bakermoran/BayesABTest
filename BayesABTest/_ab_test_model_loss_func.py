@@ -125,8 +125,8 @@ class _ab_test_loss_functions:
         """
         if loss_type not in ['absolute', 'percent']:
             raise ValueError('loss_type must be either absolute or percent')
-        if self.prior_func != 'beta':
-            raise ValueError('prior_func must be beta')
+        if self.prior_function != 'beta':
+            raise ValueError('prior_function must be beta')
         if len(self.variant_bucket_names) != 1:
             raise RuntimeError('only one variant is supported')
 

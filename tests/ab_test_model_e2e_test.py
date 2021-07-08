@@ -20,7 +20,7 @@ def test_one_variant_conversion(control_rate, variant_rate,
                                                    metric_name='bind')
     auto_bind = ab(raw_data_auto_bind, metric='bind',
                    control_bucket_name=control_name,
-                   prior_info='uninformed', prior_func='beta', debug=True,
+                   prior_info='uninformed', prior_function='beta', debug=True,
                    samples=1000)
     auto_bind.fit()
     auto_bind.plot()
@@ -45,7 +45,7 @@ def test_one_variant_continuous(control_rate, variant_rate,
                                                  metric_name='total_premium')
     premium_test = ab(raw_data_premium, metric='total_premium',
                       control_bucket_name=control_name,
-                      prior_info='informed', prior_func='log-normal',
+                      prior_info='informed', prior_function='log-normal',
                       debug=True, samples=1000)
     premium_test.fit()
     premium_test.plot()
@@ -67,7 +67,7 @@ def test_two_variant_conversion(control_rate, variant1_rate, variant2_rate,
                                                    metric_name='conversion')
     auto_bind = ab(raw_data_auto_bind, metric='conversion',
                    control_bucket_name=control_name, compare_variants=True,
-                   prior_info='uninformed', prior_func='beta', debug=True,
+                   prior_info='uninformed', prior_function='beta', debug=True,
                    samples=1000)
     auto_bind.fit()
     auto_bind.plot()
@@ -98,7 +98,7 @@ def test_two_variant_continuous(control_rate, variant1_rate, variant2_rate,
                                                  metric_name='total_premium')
     premium_test = ab(raw_data_premium, metric='total_premium',
                       control_bucket_name=control_name,
-                      prior_info='informed', prior_func='log-normal',
+                      prior_info='informed', prior_function='log-normal',
                       debug=True, samples=1000)
     premium_test.fit()
     premium_test.plot()
@@ -116,8 +116,10 @@ def test_gamma_uninformed(control_rate, variant1_rate, variant2_rate,
                           control_variance, variant1_variance,
                           variant2_variance, control_name, variant1_name,
                           variant2_name, log):
-    """Create data and run a two variant report for a continuous metric
-       while testing the uninformed prior for a gamma distribution."""
+    """Create data and run a two variant report for a continuous metric.
+
+       While testing the uninformed prior for a gamma distribution.
+       """
     rawdata = dh.create_continuous_data([control_rate,
                                          variant1_rate,
                                          variant2_rate],
@@ -131,7 +133,7 @@ def test_gamma_uninformed(control_rate, variant1_rate, variant2_rate,
                                         log=log)
     prior = 'log-normal' if log else 'normal'
     premium = ab(rawdata, metric='total_premium', prior_info='uninformed',
-                 prior_func=prior, debug=True, compare_variants=True,
+                 prior_function=prior, debug=True, compare_variants=True,
                  control_bucket_name=control_name, samples=1000)
     premium.fit()
     premium.plot()
@@ -151,7 +153,7 @@ def test_two_variants_poisson(control_rate, variant1_rate, variant2_rate,
                                      metric_name='visits', sample_length=3000)
     rawdata = rawdata.sample(frac=1).reset_index(drop=True)
     visits = ab(rawdata, metric='visits',
-                prior_info='informed', prior_func='poisson',
+                prior_info='informed', prior_function='poisson',
                 debug=True, control_bucket_name=control_name,
                 compare_variants=True, samples=3000)
     visits.fit()
@@ -166,7 +168,7 @@ def test_three_variants_continuous():
                                          'variant_3'],
                                         metric_name='total_premium')
     premium = ab(rawdata, metric='total_premium',
-                 prior_info='informed', prior_func='log-normal',
+                 prior_info='informed', prior_function='log-normal',
                  debug=True, control_bucket_name='control',
                  compare_variants=True, samples=1000)
     premium.fit()
@@ -183,7 +185,7 @@ def test_four_variants_continuous():
                                         metric_name='total_premium',
                                         sample_length=1000)
     premium = ab(rawdata, metric='total_premium',
-                 prior_info='informed', prior_func='log-normal',
+                 prior_info='informed', prior_function='log-normal',
                  debug=True, control_bucket_name='control',
                  compare_variants=False, samples=1000)
     premium.fit()
@@ -199,7 +201,7 @@ def test_specified_prior_conversion():
                                                metric_name='conversion')
     prior = {'alpha': 22, 'beta': 100-22}
     site_conversion = ab(raw_data_2vars, metric='conversion',
-                         prior_info='specified', prior_func='beta',
+                         prior_info='specified', prior_function='beta',
                          debug=True, control_bucket_name='control',
                          compare_variants=True, prior_parameters=prior,
                          samples=1000)
@@ -215,7 +217,7 @@ def test_specified_prior_continuous():
                                         ['control', 'variant_1', 'variant_2'],
                                         metric_name='total_premium')
     premium = ab(rawdata, metric='total_premium',
-                 prior_info='specified', prior_func='log-normal',
+                 prior_info='specified', prior_function='log-normal',
                  debug=True, control_bucket_name='control',
                  compare_variants=True, prior_parameters=prior,
                  samples=1000)
@@ -231,7 +233,7 @@ def test_specified_prior_normal():
                                         ['control', 'variant_1', 'variant_2'],
                                         metric_name='total_premium', log=False)
     premium = ab(rawdata, metric='total_premium',
-                 prior_info='specified', prior_func='normal',
+                 prior_info='specified', prior_function='normal',
                  debug=True, control_bucket_name='control',
                  compare_variants=True, prior_parameters=prior,
                  samples=1000)
@@ -247,7 +249,7 @@ def test_specified_prior_poisson():
                                      metric_name='visits', sample_length=3000)
 
     visits = ab(rawdata, metric='visits',
-                prior_info='specified', prior_func='poisson',
+                prior_info='specified', prior_function='poisson',
                 debug=True, control_bucket_name='control',
                 compare_variants=True, prior_parameters=prior,
                 samples=3000)
@@ -256,13 +258,14 @@ def test_specified_prior_poisson():
 
 
 def test_specified_prior_poisson_alpha_beta():
+    """E2E test a user specified prior for a beta distribution."""
     prior = {'alpha': 8, 'beta': 2}
     rawdata = dh.create_poisson_data([15, 17, 20],
                                      ['control', 'variant_1', 'variant_2'],
                                      metric_name='visits', sample_length=3000)
 
     visits = ab(rawdata, metric='visits',
-                prior_info='specified', prior_func='poisson',
+                prior_info='specified', prior_function='poisson',
                 debug=True, control_bucket_name='control',
                 compare_variants=True, prior_parameters=prior,
                 samples=3000)
