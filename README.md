@@ -1,6 +1,6 @@
 # Bayesian AB Test Report Builder
 
-![Build Status](https://github.com/bakermoran/BayesABTest/workflows/Build%20Status/badge.svg?branch=master)
+![Build Status](https://github.com/bakermoran/BayesABTest/workflows/Build%20Status/badge.svg?branch=main)
 [![PyPI version](https://badge.fury.io/py/BayesABTest.svg)](https://badge.fury.io/py/BayesABTest)
 
 > **Baker Moran**
