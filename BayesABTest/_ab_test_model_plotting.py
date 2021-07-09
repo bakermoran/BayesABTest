@@ -29,9 +29,10 @@ class _ab_test_plotting(_ab_test_utils):
                         shade=True,
                         color=self.posteriors[variant].get_color())
         plt.legend(labels=variants, loc='upper right')
-        if self.prior_func == 'beta':
+        if self.prior_function == 'beta':
             plt.xlabel('Conversion Rate')
-        elif self.prior_func == 'log-normal' or self.prior_func == 'normal':
+        elif (self.prior_function == 'log-normal'
+              or self.prior_function == 'normal'):
             plt.xlabel(self.metric)
         sns.despine(left=True)
         plt.yticks([], [])
@@ -40,7 +41,7 @@ class _ab_test_plotting(_ab_test_utils):
                                             self.metric)
         title = self._format_title(title)
         plt.title(title)
-        if self.prior_func == 'beta':
+        if self.prior_function == 'beta':
             locs, labels = plt.xticks()
             labels = self._format_axis_as_percent(locs, labels)
             plt.xticks(locs, labels=labels)
@@ -59,16 +60,15 @@ class _ab_test_plotting(_ab_test_utils):
         """
         lift = self.lift[numerator_name][denominator_name]
         ax = sns.kdeplot(lift, shade=True)
-        line = ax.get_lines()[-1]
+        line = ax.get_lines()[0]
         x, y = line.get_data()
-        ylim = max(y)*1.1
         mask = x > 0
         x, y = x[mask], y[mask]
         ax.fill_between(x, y1=y, alpha=0.5, facecolor='red')
         if len(self.variant_bucket_names) > 1:
             title = numerator_name + ' vs ' + denominator_name
             ax.set_ylabel(title, rotation=0, fontstyle='italic')
-        plt.vlines(0.0, ymin=0, ymax=ylim, linestyle='dotted')
+        plt.axvline(x=0, linestyle='dotted', color='black')
         plt.xlabel('Lift')
         percent_positive_lift = sum(i > 0 for i in lift) / len(lift)
         title = '{0} had {1:.2%} probability of positive lift'.format(
@@ -116,9 +116,9 @@ class _ab_test_plotting(_ab_test_utils):
         plt.title(title)
         plt.xlabel('Lift')
         plt.ylabel('Cumulative Probability')
-        plt.vlines(lower_bound, ymin=0, ymax=1, linestyle='dotted')
-        plt.vlines(median, ymin=0, ymax=1, linestyle='dotted')
-        plt.vlines(upper_bound, ymin=0, ymax=1, linestyle='dotted')
+        plt.axvline(x=lower_bound, linestyle='dotted', color='black')
+        plt.axvline(x=median, linestyle='dotted', color='black')
+        plt.axvline(x=upper_bound, linestyle='dotted', color='black')
         sns.despine(left=True)
         locs, labels = plt.xticks()
         labels = self._format_axis_as_percent(locs, labels)

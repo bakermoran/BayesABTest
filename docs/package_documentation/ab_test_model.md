@@ -7,7 +7,7 @@
 * `bucket_col_name` - column name in `raw_data` for the bucket (defaults to `bucket`)
 * `control_bucket_name` - value in `bucket_col_name` for the control bucket (defaults to `off`)
 * `samples` - number of samples to run the monte carlo simulation, must be 1,000 and 50,000 (defaults to 10,000)
-* `prior_func` - the type of distribution to use for the prior. options include:
+* `prior_function` - the type of distribution to use for the prior. options include:
   * `beta` - use for conversion rates. bounded on the interval [0,1]
   * `log-normal` - use for continuous, greater than zero response variables (0, +inf) (ex: premium, minutes spent on scene, etc.)
   * `normal` - use for continuous response variables that on the interval (-inf, +inf)
@@ -17,13 +17,13 @@
   * `informed` - uses an empirically informed prior (informed by the control data), and weakens this prior by `prior_scale_factor`
   * `specified` - allows for a user to input prior parameters
 * `prior_parameters` - `prior_info` must be set to `specified`. This must be a dictionary with the following key value pairs:
-  * `prior_func` = `beta`
+  * `prior_function` = `beta`
     * keys are `alpha` and `beta`
-  * `prior_func` = `log-normal`
+  * `prior_function` = `log-normal`
     * keys are `mean` and `var`
-  * `prior_func` = `normal`
+  * `prior_function` = `normal`
     * keys are `mean` and `var`
-  * `prior_func` = `poisson`
+  * `prior_function` = `poisson`
     * keys are `alpha` and `beta`
     * OR `mean` and `var`
 * `confidence_level` - value for the confidence interval on the CDF chart (defaults to `0.05`)
@@ -76,7 +76,7 @@ from matplotlib import pyplot as plt
 df = pd.read_csv('some_file.csv')
 
 # initialize class with the data and some optional variables
-first_test = ab_test_model(df, metric='conversion_rate', prior_info='informed', prior_func='beta', debug=True)
+first_test = ab_test_model(df, metric='conversion_rate', prior_info='informed', prior_function='beta', debug=True)
 
 # run public methods
 first_test.fit()
