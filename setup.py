@@ -9,7 +9,7 @@ with open(path.join(this_directory, 'README.md'), encoding='utf-8') as f:
 
 setup(
     name='BayesABTest',
-    version='1.0.6',
+    version='1.0.7',
     author='Baker Moran',
     author_email='bamoran99@gmail.com',
     license='MIT',
@@ -18,7 +18,7 @@ setup(
     long_description_content_type='text/markdown',
     keywords=['AB Test', 'Bayes', 'Bayesian Statistics'],
     url='https://github.com/bakermoran/BayesABTest',
-    download_url='https://github.com/bakermoran/BayesABTest/archive/v1.0.6-alpha.tar.gz',
+    download_url='https://github.com/bakermoran/BayesABTest/archive/v1.0.7-alpha.tar.gz',
     packages=['BayesABTest'],
     include_package_data=True,
     python_requires='>=3.6',
