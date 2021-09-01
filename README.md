@@ -7,6 +7,10 @@
 
 This allows AB testers to create a standard report for test results with python. Handles multiple variant tests, with a variety of prior function types. This is meant to be an abstraction from the nitty gritty of the details of Bayesian statistics. That said, some knowledge about which prior function to use etc. will be helpful for the user.
 
+### Example Output for a conversion rate test
+
+![alt text](docs/package_documentation/img/one_var_continuous.png "Conversion Rate Example")
+
 ## Installation
 
 * Install via pip (or specify pip3)
