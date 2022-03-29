@@ -99,11 +99,11 @@ class _ab_test_plotting(_ab_test_utils):
 
         lower_bound = x[y.index(min(y,
                                     key=lambda x:
-                                    abs(x-self.confidence_level)))]
-        median = x[y.index(min(y, key=lambda x:abs(x-0.5)))]
+                                    abs(x - self.confidence_level / 2)))]
+        median = x[y.index(min(y, key=lambda x:abs(x - 0.5)))]
         upper_bound = x[y.index(min(y,
                                     key=lambda x:
-                                    abs(x-(1-self.confidence_level))))]
+                                    abs(x - (1 - self.confidence_level / 2))))]
 
         sns.lineplot(x=x, y=y)
         ci = 1 - self.confidence_level
