@@ -23,10 +23,10 @@ setup(
     include_package_data=True,
     python_requires='>=3.8',
     install_requires=[
-        'numpy>=1.21.0,<1.24.0',
-        'pandas<1.5.0',
-        'matplotlib<4.0.0',
-        'seaborn<0.11.0',
+        'numpy>=1.20',
+        'pandas>=1.2',
+        'matplotlib>=3.3',
+        'seaborn>=0.13.0',
     ],
     classifiers=[
         'Development Status :: 3 - Alpha',
