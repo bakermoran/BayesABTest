@@ -26,7 +26,7 @@ setup(
         'numpy>=1.20',
         'pandas>=1.2',
         'matplotlib>=3.3',
-        'seaborn>=0.13.0',
+        'seaborn[stats]>=0.13.0',
     ],
     classifiers=[
         'Development Status :: 3 - Alpha',
@@ -34,6 +34,9 @@ setup(
         'Topic :: Scientific/Engineering :: Mathematics',
         'License :: OSI Approved :: MIT License',
         'Programming Language :: Python :: 3.8',
-        'Programming Language :: Python :: 3.9'
+        'Programming Language :: Python :: 3.9',
+        'Programming Language :: Python :: 3.10',
+        'Programming Language :: Python :: 3.11',
+        'Programming Language :: Python :: 3.12'
     ],
 )
