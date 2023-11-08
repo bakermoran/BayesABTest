@@ -21,19 +21,19 @@ setup(
     download_url='https://github.com/bakermoran/BayesABTest/archive/v1.0.8-alpha.tar.gz',
     packages=['BayesABTest'],
     include_package_data=True,
-    python_requires='>=3.6',
+    python_requires='>=3.8',
     install_requires=[
-        'numpy==1.19.5',
-        'pandas==1.1.5',
-        'matplotlib==3.3.4',
-        'seaborn==0.10.1'
+        'numpy>=1.21.0,<1.24.0',
+        'pandas<1.5.0',
+        'matplotlib<4.0.0',
+        'seaborn<0.11.0',
     ],
     classifiers=[
         'Development Status :: 3 - Alpha',
         'Intended Audience :: Science/Research',
         'Topic :: Scientific/Engineering :: Mathematics',
         'License :: OSI Approved :: MIT License',
-        'Programming Language :: Python :: 3.6',
-        'Programming Language :: Python :: 3.7'
+        'Programming Language :: Python :: 3.8',
+        'Programming Language :: Python :: 3.9'
     ],
 )
