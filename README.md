@@ -13,15 +13,15 @@ This allows AB testers to create a standard report for test results with python.
 
 ## Installation
 
-* Install via pip (or specify pip3)
+- Install via pip (or specify pip3)
 
-    ```bash
-    pip install BayesABTest
-    ```
+  ```bash
+  pip install BayesABTest
+  ```
 
   OR
 
-* Download files from [PyPi](https://pypi.org/project/BayesABTest/#files) and install
+- Download files from [PyPi](https://pypi.org/project/BayesABTest/#files) and install
 
 ## Package Functions and Classes
 
@@ -45,19 +45,20 @@ There is a lot of documentation out there about a Bayesian framework of A/B test
 
 Articles Reference:
 
-* <https://www.countbayesie.com/blog/2015/4/25/bayesian-ab-testing>
-* <https://medium.com/convoy-tech/the-power-of-bayesian-a-b-testing-f859d2219d5>
-* <https://cdn2.hubspot.net/hubfs/310840/VWO_SmartStats_technical_whitepaper.pdf>
+- <https://www.countbayesie.com/blog/2015/4/25/bayesian-ab-testing>
+- <https://medium.com/convoy-tech/the-power-of-bayesian-a-b-testing-f859d2219d5>
+- <https://cdn2.hubspot.net/hubfs/310840/VWO_SmartStats_technical_whitepaper.pdf>
 
 ### Version History
 
-* `0.1.0-prealpha` - *12/02/2019*
-* `1.0.0-alpha` - *12/27/2019*
-* `1.0.1-alpha` - *01/02/2020*
-* `1.0.2-alpha` - *06/17/2020*
-* `1.0.3-alpha` - *06/17/2020*
-* `1.0.4-alpha` - *06/22/2020*
-* `1.0.5-alpha` - *06/22/2020*
-* `1.0.6-alpha` - *06/22/2020*
-* `1.0.7-alpha` - *07/09/2021*
-* `1.0.8-alpha` - *03/29/2022*
+- `0.1.0-prealpha` - _12/02/2019_
+- `1.0.0-alpha` - _12/27/2019_
+- `1.0.1-alpha` - _01/02/2020_
+- `1.0.2-alpha` - _06/17/2020_
+- `1.0.3-alpha` - _06/17/2020_
+- `1.0.4-alpha` - _06/22/2020_
+- `1.0.5-alpha` - _06/22/2020_
+- `1.0.6-alpha` - _06/22/2020_
+- `1.0.7-alpha` - _07/09/2021_
+- `1.0.8-alpha` - _03/29/2022_
+- `1.0.9-alpha` - _03/29/2022_
