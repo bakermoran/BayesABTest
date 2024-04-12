@@ -26,7 +26,7 @@ class _ab_test_plotting(_ab_test_utils):
             variants = list(self.posteriors.keys())
         for variant in variants:
             sns.kdeplot(self.posteriors[variant].get_posterior_sample(),
-                        shade=True,
+                        fill=True,
                         color=self.posteriors[variant].get_color())
         plt.legend(labels=variants, loc='upper right')
         if self.prior_function == 'beta':
@@ -59,12 +59,7 @@ class _ab_test_plotting(_ab_test_utils):
                 calculation.
         """
         lift = self.lift[numerator_name][denominator_name]
-        ax = sns.kdeplot(lift, shade=True)
-        line = ax.get_lines()[0]
-        x, y = line.get_data()
-        mask = x > 0
-        x, y = x[mask], y[mask]
-        ax.fill_between(x, y1=y, alpha=0.5, facecolor='red')
+        ax = sns.kdeplot(lift, fill=True)
         if len(self.variant_bucket_names) > 1:
             title = numerator_name + ' vs ' + denominator_name
             ax.set_ylabel(title, rotation=0, fontstyle='italic')
