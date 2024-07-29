@@ -1,15 +1,15 @@
 # Bayesian Statistics
 
-There are plenty of articles out there motivating why we should use Bayesian statistics in product analytics. I'm not going to try to reinvent the wheel here, so I will provide only a brief explaination and link to some articles that I found helpful in my learning. I will also explain why I created this package.
+There are plenty of articles out there motivating why we should use Bayesian statistics in product analytics. I'm not going to try to reinvent the wheel here, so I will provide only a brief explanation and link to some articles that I found helpful in my learning. I will also explain why I created this package.
 
 ## Motivation
 
 ### Why Bayesian Statistics
 
-Bayesian statistics is a completely different way to think about statistics from what you likely learned in high school and college (typically referred to as frequentist statistics). Bayesian statistics allows us to much more easily answer a wider variety of questions that are more relevant for the business world. Although most people are _used_ to hearing a p-value for a statistical test, many don't actually know what it means or how to interpret it beyond the "satistical significance is when p <= 0.05" we were programmed to regurgitate. Bayesian statistics allows a much more intuitive interpretation of the results of a test. Examples of questions Bayesian statistics is purpose built to answer:
+Bayesian statistics is a completely different way to think about statistics from what you likely learned in high school and college (typically referred to as frequentist statistics). Bayesian statistics allows us to much more easily answer a wider variety of questions that are more relevant for the business world. Although most people are _used_ to hearing a p-value for a statistical test, many don't actually know what it means or how to interpret it beyond the "statistical significance is when p <= 0.05" we were programmed to regurgitate. Bayesian statistics allows a much more intuitive interpretation of the results of a test. Examples of questions Bayesian statistics is purpose built to answer:
 
 * What is the probability that Variant we are testing is better than the Control?
-* How much better is the Cariant than the Control?
+* How much better is the Variant than the Control?
 * If we make the wrong choice, how much worse could it actually be?
 
 ### The Issue with Traditional AB Testing
@@ -33,7 +33,7 @@ I created this package originally out of necessity and a desire to learn.
 
 ### Further Reading
 
-* <https://www.countbayesie.com/blog/2015/4/25/bayesian-ab-testing> (this entire blog is great for the budding Bayesian statistitian)
+* <https://www.countbayesie.com/blog/2015/4/25/bayesian-ab-testing> (this entire blog is great for the budding Bayesian statistician)
 * <https://medium.com/convoy-tech/the-power-of-bayesian-a-b-testing-f859d2219d5> (how bayesian statistics allows us to innovate quickly)
 * <https://cdn2.hubspot.net/hubfs/310840/VWO_SmartStats_technical_whitepaper.pdf> (a technical paper on defining risk with bayesian statistics)
 * <https://sl8r000.github.io/ab_testing_statistics/> (how to use bayesian statistics correctly when AB testing)
