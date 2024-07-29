@@ -9,7 +9,7 @@ There are plenty of articles out there motivating why we should use Bayesian sta
 Bayesian statistics is a completely different way to think about statistics from what you likely learned in high school and college (typically referred to as frequentist statistics). Bayesian statistics allows us to much more easily answer a wider variety of questions that are more relevant for the business world. Although most people are _used_ to hearing a p-value for a statistical test, many don't actually know what it means or how to interpret it beyond the "statistical significance is when p <= 0.05" we were programmed to regurgitate. Bayesian statistics allows a much more intuitive interpretation of the results of a test. Examples of questions Bayesian statistics is purpose built to answer:
 
 * What is the probability that Variant we are testing is better than the Control?
-* How much better is the Cariant than the Control?
+* How much better is the Variant than the Control?
 * If we make the wrong choice, how much worse could it actually be?
 
 ### The Issue with Traditional AB Testing
