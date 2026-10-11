@@ -1,10 +1,13 @@
 """Plotting functionality for ab_test_model."""
 
+from itertools import combinations
+
 import matplotlib.pyplot as plt
 import numpy as np
 import seaborn as sns
-from itertools import combinations
+
 from ._ab_test_model_utils import _ab_test_utils
+
 # pylint: disable=no-member
 
 

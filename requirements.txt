@@ -1,4 +1,0 @@
-numpy>=1.20
-pandas>=1.2
-matplotlib>=3.3
-seaborn[stats]>=0.13.0

@@ -1,7 +1,8 @@
 """unit testing graphing functions in ab_test_model."""
 
-from BayesABTest import ab_test_model as ab
 import data_helpers as dh
+
+from BayesABTest import ab_test_model as ab
 
 
 def test_single_plot_posteriors_unit():

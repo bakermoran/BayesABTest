@@ -1,7 +1,8 @@
 """AB test distribution exploration functions tests."""
 
-from BayesABTest import ab_test_dist_explorer as pe
 import pytest
+
+from BayesABTest import ab_test_dist_explorer as pe
 
 
 @pytest.mark.parametrize("""alpha, beta""",

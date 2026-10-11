@@ -1,9 +1,9 @@
 """Fucntions to help explore distribution parameters."""
 
 import numpy as np
-from scipy import stats
-from matplotlib import pyplot as plt
 import seaborn as sns
+from matplotlib import pyplot as plt
+from scipy import stats
 from scipy.special import factorial
 
 

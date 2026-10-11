@@ -16,7 +16,7 @@ class _prior_distribution_params:
                 object to set prior parameters for.
         """
         if ab_test.prior_info == 'specified' and \
-                type(ab_test.prior_parameters) != dict:
+                not isinstance(ab_test.prior_parameters, dict):
             raise TypeError('prior_params must be dictionary type')
 
         self.ab_test = ab_test

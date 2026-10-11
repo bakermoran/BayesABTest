@@ -1,13 +1,15 @@
 """Declaration file for ab_test_model class."""
 
-import numpy as np
-import matplotlib.pyplot as plt
 from itertools import combinations
+
+import matplotlib.pyplot as plt
+import numpy as np
+
+from ._ab_test_model_loss_func import _ab_test_loss_functions
 from ._ab_test_model_plotting import _ab_test_plotting
 from ._ab_test_model_sampling import _ab_test_model_sampling
-from ._ab_test_model_loss_func import _ab_test_loss_functions
-from ._prior_distribution import _prior_distribution_params
 from ._posterior_distribution import posterior_distribution
+from ._prior_distribution import _prior_distribution_params
 
 # empirical bayes method https://en.wikipedia.org/wiki/Empirical_Bayes_method
 # https://juanitorduz.github.io/intro_pymc3/

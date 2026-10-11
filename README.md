@@ -13,15 +13,26 @@ This allows AB testers to create a standard report for test results with python.
 
 ## Installation
 
-- Install via pip (or specify pip3)
+- Install via pip or [uv](https://docs.astral.sh/uv/) (requires Python 3.12+)
 
   ```bash
   pip install BayesABTest
+  # or
+  uv add BayesABTest
   ```
 
   OR
 
 - Download files from [PyPi](https://pypi.org/project/BayesABTest/#files) and install
+
+## Development
+
+```bash
+uv sync                # create .venv and install runtime + dev dependencies
+uv run pytest -n 4     # run tests
+uv run ruff check .    # lint
+uv build               # build sdist and wheel
+```
 
 ## Package Functions and Classes
 

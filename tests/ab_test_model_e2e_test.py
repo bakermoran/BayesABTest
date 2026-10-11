@@ -1,8 +1,9 @@
 """ab_test_model test functions."""
 
-from BayesABTest import ab_test_model as ab
 import data_helpers as dh
 import pytest
+
+from BayesABTest import ab_test_model as ab
 
 
 @pytest.mark.parametrize("""control_rate, variant_rate,
@@ -118,8 +119,8 @@ def test_gamma_uninformed(control_rate, variant1_rate, variant2_rate,
                           variant2_name, log):
     """Create data and run a two variant report for a continuous metric.
 
-       While testing the uninformed prior for a gamma distribution.
-       """
+    While testing the uninformed prior for a gamma distribution.
+    """
     rawdata = dh.create_continuous_data([control_rate,
                                          variant1_rate,
                                          variant2_rate],

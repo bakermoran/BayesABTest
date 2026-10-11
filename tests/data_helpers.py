@@ -1,7 +1,7 @@
 """Functions to help generate fake test data."""
 
-import pandas as pd
 import numpy as np
+import pandas as pd
 
 
 def create_conversion_sample(true_rate, length=1000):
