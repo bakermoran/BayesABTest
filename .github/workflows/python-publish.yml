@@ -1,4 +1,4 @@
-git name: Upload Python Package
+name: Upload Python Package
 
 on:
   release:
