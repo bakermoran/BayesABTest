@@ -9,35 +9,69 @@ This allows AB testers to create a standard report for test results with python.
 
 ### Example Output for a conversion rate test
 
-![alt text](docs/package_documentation/img/one_var_continuous.png "Conversion Rate Example")
+![Conversion rate example report](https://raw.githubusercontent.com/bakermoran/BayesABTest/main/docs/package_documentation/img/one_var_conversion.png)
 
 ## Installation
 
-- Install via pip (or specify pip3)
+- Install via pip or [uv](https://docs.astral.sh/uv/) (requires Python 3.12+)
 
   ```bash
   pip install BayesABTest
+  # or
+  uv add BayesABTest
   ```
 
   OR
 
 - Download files from [PyPi](https://pypi.org/project/BayesABTest/#files) and install
 
+## Quick start
+
+```python
+import pandas as pd
+from matplotlib import pyplot as plt
+from BayesABTest import ABTest
+
+df = pd.read_csv('results.csv')   # a metric column and a bucket column
+
+result = ABTest('conversion', 'beta', control='off', random_state=0).fit(df)
+
+result.prob_better('on')          # probability the variant beats the control
+result.summary()                  # posterior mean, interval and lift per bucket
+result.plot()                     # the standard report
+plt.show()
+```
+
+`family` is `'beta'` (conversion rates), `'log-normal'`, `'normal'` or `'poisson'`. See the [ABTest docs](https://github.com/bakermoran/BayesABTest/blob/main/docs/package_documentation/ab_test.md) for priors, loss and plotting options.
+
+## Development
+
+```bash
+uv sync                # create .venv and install runtime + dev dependencies
+uv run pytest -n 4     # run tests
+uv run ruff check .    # lint
+uv build               # build sdist and wheel
+```
+
 ## Package Functions and Classes
 
-### [ab_test_model](docs/package_documentation/ab_test_model.md)
+### [ABTest](https://github.com/bakermoran/BayesABTest/blob/main/docs/package_documentation/ab_test.md)
 
 Class implementing out of the box AB testing functionality. Simple, easy to use AB testing with many different prior function types, all in one clean interface.
 
-### [ab_test_dist_explorer](docs/package_documentation/ab_test_dist_explorer.md)
+### [ab_test_dist_explorer](https://github.com/bakermoran/BayesABTest/blob/main/docs/package_documentation/ab_test_dist_explorer.md)
 
 Functions allowing a user to explore different distributions with simple to user interface. Allows a user to visually learn about bayesian statistics, and inform proper prior function choice when doing Bayesian AB testing.
+
+## Upgrading from 1.x
+
+2.0 changes the API and fixes several math errors. See [the migration guide](https://github.com/bakermoran/BayesABTest/blob/main/docs/migration_2_0.md).
 
 ## Appendix
 
 ### Learning
 
-For a documentation explaining and motivating the use of Bayesian statistics to evaluate A/B tests, see [documentation](docs/besyian_ab_testing/Bayesian_AB_Testing_explainer.md)
+For a documentation explaining and motivating the use of Bayesian statistics to evaluate A/B tests, see [documentation](https://github.com/bakermoran/BayesABTest/blob/main/docs/besyian_ab_testing/Bayesian_AB_Testing_explainer.md)
 
 ### Acknowledgements
 
@@ -62,3 +96,4 @@ Articles Reference:
 - `1.0.7-alpha` - _07/09/2021_
 - `1.0.8-alpha` - _03/29/2022_
 - `1.0.9-alpha` - _03/29/2022_
+- `2.0.0` - API redesign and math fixes, see the [migration guide](https://github.com/bakermoran/BayesABTest/blob/main/docs/migration_2_0.md)

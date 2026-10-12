@@ -1,0 +1,55 @@
+[project]
+name = "BayesABTest"
+version = "2.0.0"
+description = "A package for running AB tests in a Bayesian framework."
+readme = "README.md"
+license = "MIT"
+license-files = ["LICENSE"]
+authors = [{ name = "Baker Moran", email = "bamoran99@gmail.com" }]
+keywords = ["AB Test", "Bayes", "Bayesian Statistics"]
+classifiers = [
+    "Development Status :: 3 - Alpha",
+    "Intended Audience :: Science/Research",
+    "Topic :: Scientific/Engineering :: Mathematics",
+    "Programming Language :: Python :: 3",
+    "Programming Language :: Python :: 3.12",
+    "Programming Language :: Python :: 3.13",
+    "Programming Language :: Python :: 3.14",
+]
+requires-python = ">=3.12"
+dependencies = [
+    "matplotlib>=3.11.2",
+    "numpy>=2.5.4",
+    "pandas>=3.0.6",
+    "scipy>=1.18.1",
+    "seaborn[stats]>=0.13.2",
+]
+
+[project.urls]
+Homepage = "https://github.com/bakermoran/BayesABTest"
+
+[dependency-groups]
+dev = [
+    "pylint>=4.1.3",
+    "pytest>=9.1.1",
+    "pytest-xdist>=3.8.0",
+    "ruff>=0.17.0",
+]
+
+[build-system]
+requires = ["hatchling"]
+build-backend = "hatchling.build"
+
+[tool.hatch.build.targets.wheel]
+packages = ["BayesABTest"]
+
+[tool.ruff.lint]
+# pycodestyle, pyflakes, pydocstyle, isort
+select = ["E", "W", "F", "D", "I"]
+
+[tool.ruff.lint.per-file-ignores]
+# test names are descriptive; require docstrings on the library only
+"tests/*" = ["D103"]
+
+[tool.ruff.lint.pydocstyle]
+convention = "pep257"

@@ -1,10 +1,15 @@
 """Functions to help generate fake test data."""
 
-import pandas as pd
 import numpy as np
+import pandas as pd
 
 
-def create_conversion_sample(true_rate, length=1000):
+def _rng(rng):
+    """Return rng, or a fresh unseeded Generator if None."""
+    return rng if rng is not None else np.random.default_rng()
+
+
+def create_conversion_sample(true_rate, length=1000, rng=None):
     """Create a conversion binary list of n=length samples with true_rate.
 
     Arguments:
@@ -16,16 +21,10 @@ def create_conversion_sample(true_rate, length=1000):
     Returns:
         sample {list} -- list of conversion samples
     """
-    sample = list(np.random.rand(length))
-    for index, prob in enumerate(sample):
-        if prob < true_rate:
-            sample[index] = 1
-        else:
-            sample[index] = 0
-    return sample
+    return [int(x) for x in _rng(rng).random(length) < true_rate]
 
 
-def create_continuous_sample(mean, sigma, log=True, length=1000):
+def create_continuous_sample(mean, sigma, log=True, length=1000, rng=None):
     """Create a random (log) normal list of n=length samples with mu/sigma.
 
     Arguments:
@@ -42,13 +41,14 @@ def create_continuous_sample(mean, sigma, log=True, length=1000):
     if log:
         mean = np.log(mean)
         sigma = np.log(sigma)
-        sample = list(np.random.lognormal(mean=mean, sigma=sigma, size=length))
+        sample = list(_rng(rng).lognormal(mean=mean, sigma=sigma,
+                                          size=length))
     else:
-        sample = list(np.random.normal(loc=mean, scale=sigma, size=length))
+        sample = list(_rng(rng).normal(loc=mean, scale=sigma, size=length))
     return sample
 
 
-def create_poisson_sample(mean, length=1000):
+def create_poisson_sample(mean, length=1000, rng=None):
     """Create a random poisson list of n=length samples with mean.
 
     Arguments:
@@ -60,12 +60,12 @@ def create_poisson_sample(mean, length=1000):
     Returns:
         sample {list} -- list of poisson samples
     """
-    sample = list(np.random.poisson(lam=mean, size=length))
+    sample = list(_rng(rng).poisson(lam=mean, size=length))
     return sample
 
 
 def create_conversion_data(true_rates, bucket_names, metric_name,
-                           bucket_column='bucket', sample_length=1000):
+                           bucket_column='bucket', sample_length=1000, seed=0):
     """Create a dataframe to simulate conversion data.
 
     true_rates and bucket_names should be of length = number of variants.
@@ -79,15 +79,18 @@ def create_conversion_data(true_rates, bucket_names, metric_name,
             buckets
         sample_length {int} number of obersvations to be in each sample
             data (default: {1000})
+        seed {int} -- seed for the data. One generator is shared by all the
+            buckets (default: {0})
 
     Returns:
         raw_data {dataframe} -- dataframe
     """
+    rng = np.random.default_rng(seed)
     data = {}
     metric = []
     buckets = []
     for rate, name in zip(true_rates, bucket_names):
-        metric = metric + create_conversion_sample(rate, sample_length)
+        metric = metric + create_conversion_sample(rate, sample_length, rng)
         buckets = buckets + [name] * sample_length
     data[metric_name] = metric
     data[bucket_column] = buckets
@@ -96,7 +99,7 @@ def create_conversion_data(true_rates, bucket_names, metric_name,
 
 
 def create_continuous_data(means, stds, bucket_names, metric_name, log=True,
-                           bucket_column='bucket', sample_length=1000):
+                           bucket_column='bucket', sample_length=1000, seed=0):
     """Create a dataframe to simulate conversion data.
 
     means, stds, and bucket_names should be of length = number of variants.
@@ -112,10 +115,13 @@ def create_continuous_data(means, stds, bucket_names, metric_name, log=True,
             buckets
         sample_length {int} number of obersvations to be in each sample
             data (default: {1000})
+        seed {int} -- seed for the data. One generator is shared by all the
+            buckets (default: {0})
 
     Returns:
         raw_data {dataframe} -- dataframe
     """
+    rng = np.random.default_rng(seed)
     data = {}
     metric = []
     buckets = []
@@ -123,7 +129,8 @@ def create_continuous_data(means, stds, bucket_names, metric_name, log=True,
         metric = metric + create_continuous_sample(mean,
                                                    std,
                                                    log,
-                                                   sample_length)
+                                                   sample_length,
+                                                   rng)
         buckets = buckets + [name] * sample_length
     data[metric_name] = metric
     data[bucket_column] = buckets
@@ -132,7 +139,7 @@ def create_continuous_data(means, stds, bucket_names, metric_name, log=True,
 
 
 def create_poisson_data(means, bucket_names, metric_name,
-                        bucket_column='bucket', sample_length=1000):
+                        bucket_column='bucket', sample_length=1000, seed=0):
     """Create a dataframe to simulate poisson/count data.
 
     means and bucket_names should be of length = number of variants.
@@ -146,15 +153,18 @@ def create_poisson_data(means, bucket_names, metric_name,
             buckets
         sample_length {int} number of obersvations to be in each sample
             data (default: {1000})
+        seed {int} -- seed for the data. One generator is shared by all the
+            buckets (default: {0})
 
     Returns:
         raw_data {dataframe} -- dataframe
     """
+    rng = np.random.default_rng(seed)
     data = {}
     metric = []
     buckets = []
     for mean, name in zip(means, bucket_names):
-        metric = metric + create_poisson_sample(mean, sample_length)
+        metric = metric + create_poisson_sample(mean, sample_length, rng)
         buckets = buckets + [name] * sample_length
     data[metric_name] = metric
     data[bucket_column] = buckets
