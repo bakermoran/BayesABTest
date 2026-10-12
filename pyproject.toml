@@ -1,6 +1,6 @@
 [project]
 name = "BayesABTest"
-version = "1.1.0"
+version = "2.0.0"
 description = "A package for running AB tests in a Bayesian framework."
 readme = "README.md"
 license = "MIT"
@@ -46,6 +46,10 @@ packages = ["BayesABTest"]
 [tool.ruff.lint]
 # pycodestyle, pyflakes, pydocstyle, isort
 select = ["E", "W", "F", "D", "I"]
+
+[tool.ruff.lint.per-file-ignores]
+# test names are descriptive; require docstrings on the library only
+"tests/*" = ["D103"]
 
 [tool.ruff.lint.pydocstyle]
 convention = "pep257"
